@@ -1,4 +1,4 @@
-<!-- PROJECT LOGO -->
+﻿<!-- PROJECT LOGO -->
 <br />
 <div align="center">
   <a href="https://github.com/sangeethnandakumar/Twileloop.SpreadSheet">
@@ -19,7 +19,6 @@ A cross format spreadsheet accessor that empowers you to effortlessly read, writ
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sangeethnanda)
 
 # Usage
-
 ***To get started, You have to install atleast 2 packages:***
 
 - The core `Twileloop.SpreadSheet` package
@@ -27,6 +26,8 @@ A cross format spreadsheet accessor that empowers you to effortlessly read, writ
 
 #### Disclaimer:
 ***In the backstage, Twileloop.SpreadSheet uses NPOI to connect with Excel files and Google.Apis.Sheets.v4 to connect with Google Sheets***
+
+<hr/>
 
 ## 1. Install Core Package
 ```bash
@@ -37,13 +38,28 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 
 > There is no need to install all these driver packages, If you only prefer to work with Microsoft Excel, ignore the Google Sheets driver package
 
-
-
-
 | Driver | To Use | Install Package   
 | :---: | :---:   | :---:
 | <img src="https://iili.io/HUaMOEG.png" alt="Logo" height="30"> | Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet --version <LATEST VERSION>`  
 | <img src="https://iili.io/HUaM8Yl.png" alt="Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel --version <LATEST VERSION>`  
+
+### Supported Features
+
+✅ - Available
+🚧 - Work In Progress
+❌ - Not Available
+
+| Feature     | Microsoft Excel | Google Sheets
+| ---      | ---       | ---
+| Plan Text Reads | ✅ | ✅
+| Plan Text Writes | ✅ | ✅
+| Switch Sheets | ✅ | ✅
+| Text Formatting | 🚧 | 🚧
+| Cell Formatting | 🚧 | 🚧
+| Image Reads | 🚧 | 🚧
+| Image Writes | 🚧 | 🚧
+| Set Formulas | ❌ | ❌
+| Draw Graph | ❌ | ❌
 
 ## 3. Initialize Driver(s) 
 Once installed packages, Initialize your drivers
