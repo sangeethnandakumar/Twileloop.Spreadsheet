@@ -25,6 +25,8 @@ A cross format spreadsheet accessor that empowers you to effortlessly read, writ
 - The core `Twileloop.SpreadSheet` package
 - A driver package for your desired spreadsheet (Microsoft Excel, Google Sheet etc...)
 
+#### Disclaimer:
+***In the backstage, Twileloop.SpreadSheet uses NPOI to connect with Excel files and Google.Apis.Sheets.v4 to connect with Google Sheets***
 
 ## 1. Install Core Package
 ```bash
