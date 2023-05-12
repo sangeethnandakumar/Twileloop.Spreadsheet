@@ -1,4 +1,4 @@
-name: "NuGet Publish"
+name: "Excel - NuGet Publish"
 
 on:
   workflow_dispatch:
