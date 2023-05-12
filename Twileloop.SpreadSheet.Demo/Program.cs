@@ -1,7 +1,7 @@
 ﻿using Spectre.Console;
 using System.Data;
 using Twileloop.SpreadSheet.Factory;
-using Twileloop.SpreadSheet.Factory.Configs;
+using Twileloop.SpreadSheet.MicrosoftExcel;
 
 namespace Twileloop.SpreadSheet.Demo
 {
@@ -23,54 +23,28 @@ namespace Twileloop.SpreadSheet.Demo
             countries.Add(10, "South Korea");
 
 
-            //Make Microsoft Excel and GoogleSheet services
-            var excel = SpreadSheetFactory.CreateSpreadSheetService(SpreadSheetKind.MicrosoftExcel, new MicrosoftExcelConfiguration
+            //Step 1: Create a driver
+            var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
             {
-                FileLocation = @"Demo.xlsx",
+                FileLocation = @"Demo.xlsx"
             });
 
-            //Operate Microsoft Excel
-            using (excel)
-            {
-                excel.Controller.LoadWorkbook("Sheet1");
-                //Read a cell by address or row+column
-                excel.Reader.ReadCell(1, 1);
-                excel.Reader.ReadCell("A1");
-                //Read full rows
-                var excelRows = excel.Reader.ReadRow(1);
-                //Read full columns
-                var excelColumns = excel.Reader.ReadColumn(1);
-                //Read a selection as grid
-                var excelGrid = excel.Reader.ReadSelection(1, 1, 5, 5);
-                excelGrid = excel.Reader.ReadSelection("C7", "G9");
-                DrawDataTable(excelGrid);
+            //Step 2: Use that driver to build a spreadsheet accessor
+            var accessor = SpreadSheetFactory.CreateAccessor(excelDriver);
 
-                for (var row = 1; row <= countries.Count; row++)
-                {
-                    excel.Writer.WriteRow(row, row.ToString(), countries[row]);
-                }
+            //Step 3: Now this accessor can Read/Write and Control spreadsheet. Let's open Sheet1
+            using (accessor)
+            {
+                //Control spreadsheet
+                accessor.Controller.LoadSheet("Sheet1");
+
+                //Read something
+                var seventhRow = accessor.Reader.ReadRow(7);
+
+                //Write it as column downwards
+                accessor.Writer.WriteColumn(2, seventhRow);
             }
 
-
-
-
-
-
-            var googleSheets = SpreadSheetFactory.CreateSpreadSheetService(SpreadSheetKind.GoogleSheet, new GoogleSheetConfiguration
-            {
-                SheetsURI = new Uri("https://docs.google.com/spreadsheets/d/1V0w0bECUI4c0bUgyz11RLrIpkhoxlXhPtkw6mbNqws8/edit#gid=1048112514"),
-                Credential = "secret.json",
-            });
-
-            //Operate Microsoft Excel
-            using (googleSheets)
-            {
-                googleSheets.Controller.LoadWorkbook("<SHEET_NAME>");
-                for (var row = 1; row <= countries.Count; row++)
-                {
-                    googleSheets.Writer.WriteRow(row, row.ToString(), countries[row]);
-                }
-            }
         }
 
 

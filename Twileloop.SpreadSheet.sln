@@ -5,7 +5,13 @@ VisualStudioVersion = 17.6.33617.297
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Twileloop.SpreadSheet", "Twileloop.SpreadSheet\Twileloop.SpreadSheet.csproj", "{E0CF6475-3849-4FB5-93C9-984E8C891060}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Twileloop.SpreadSheet.Demo", "Twileloop.SpreadSheet.Demo\Twileloop.SpreadSheet.Demo.csproj", "{0E79E7D5-9565-4762-81D6-E3E236E6BA6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Twileloop.SpreadSheet.Demo", "Twileloop.SpreadSheet.Demo\Twileloop.SpreadSheet.Demo.csproj", "{0E79E7D5-9565-4762-81D6-E3E236E6BA6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Twileloop.SpreadSheet.MicrosoftExcel", "Twileloop.SpreadSheet.MicrosoftExcel\Twileloop.SpreadSheet.MicrosoftExcel.csproj", "{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Twileloop.SpreadSheet.GoogleSheet", "Twileloop.SpreadSheet.GoogleSheet\Twileloop.SpreadSheet.GoogleSheet.csproj", "{7F28ABF3-AC0E-455B-A556-31452C0A03FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{C9B68D07-F13B-42A0-8955-76F6ACB61FB4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +27,22 @@ Global
 		{0E79E7D5-9565-4762-81D6-E3E236E6BA6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E79E7D5-9565-4762-81D6-E3E236E6BA6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E79E7D5-9565-4762-81D6-E3E236E6BA6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F28ABF3-AC0E-455B-A556-31452C0A03FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F28ABF3-AC0E-455B-A556-31452C0A03FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F28ABF3-AC0E-455B-A556-31452C0A03FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F28ABF3-AC0E-455B-A556-31452C0A03FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E0CF6475-3849-4FB5-93C9-984E8C891060} = {C9B68D07-F13B-42A0-8955-76F6ACB61FB4}
+		{1901A0C4-9D1A-4062-B9E6-03EFDB2955F7} = {C9B68D07-F13B-42A0-8955-76F6ACB61FB4}
+		{7F28ABF3-AC0E-455B-A556-31452C0A03FC} = {C9B68D07-F13B-42A0-8955-76F6ACB61FB4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C44E73FF-2C3A-4B71-BFC9-C99FD4167B93}

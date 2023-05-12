@@ -2,6 +2,6 @@
 {
     public interface ISpreadSheetController
     {
-        void LoadWorkbook(string sheetName);
+        void LoadSheet(string sheetName);
     }
 }

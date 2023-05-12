@@ -8,19 +8,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using Twileloop.SpreadSheet.Factory.Abstractions;
-using Twileloop.SpreadSheet.Factory.Configs;
+using Twileloop.SpreadSheet.Factory.Base;
 
-namespace Twileloop.SpreadSheet.Factory.Services
+namespace Twileloop.SpreadSheet.GoogleSheet
 {
-    public class GoogleSheetService : ISpreadSheet
+    public class GoogleSheetDriver : ISpreadSheetDriver
     {
-        private readonly GoogleSheetConfiguration config;
+        private readonly GoogleSheetOptions config;
         private SheetsService googleSheets;
         public string SheetName { get; set; }
         public string SheetId { get; set; }
 
-        public GoogleSheetService(GoogleSheetConfiguration config)
+        public GoogleSheetDriver(GoogleSheetOptions config)
         {
             this.config = config;
         }
@@ -73,7 +72,7 @@ namespace Twileloop.SpreadSheet.Factory.Services
             return spreadsheetId;
         }
 
-        public void LoadWorkbook(string sheetName)
+        public void LoadSheet(string sheetName)
         {
             GoogleCredential credential;
             using (var stream = new FileStream(config.Credential, FileMode.Open, FileAccess.Read))

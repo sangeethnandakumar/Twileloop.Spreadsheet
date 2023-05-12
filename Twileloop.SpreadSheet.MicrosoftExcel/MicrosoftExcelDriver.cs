@@ -5,18 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using Twileloop.SpreadSheet.Factory.Abstractions;
-using Twileloop.SpreadSheet.Factory.Configs;
+using Twileloop.SpreadSheet.Factory.Base;
 
-namespace Twileloop.SpreadSheet.Factory.Services
+namespace Twileloop.SpreadSheet.MicrosoftExcel
 {
-    public class MicrosoftExcelService : ISpreadSheet
+    public class MicrosoftExcelDriver : ISpreadSheetDriver
     {
-        private readonly MicrosoftExcelConfiguration config;
+        private readonly MicrosoftExcelOptions config;
         private IWorkbook workbook;
         private ISheet sheet;
 
-        public MicrosoftExcelService(MicrosoftExcelConfiguration config)
+        public MicrosoftExcelDriver(MicrosoftExcelOptions config)
         {
             this.config = config;
         }
@@ -169,7 +168,7 @@ namespace Twileloop.SpreadSheet.Factory.Services
             return ReadSelection(startRow, startColumn, endRow, endColumn);
         }
 
-        public void LoadWorkbook(string sheetName)
+        public void LoadSheet(string sheetName)
         {
             using (FileStream fileStream = new FileStream(config.FileLocation, FileMode.Open, FileAccess.ReadWrite))
             {

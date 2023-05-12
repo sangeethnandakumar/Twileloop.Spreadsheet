@@ -4,7 +4,34 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Nullable>enable</Nullable>
 		<LangVersion>9.0</LangVersion>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Title>LiteDB Unit Of Work</Title>
+		<Authors>Twileloop, Sangeeth Nandakumar</Authors>
+		<PackageProjectUrl>https://github.com/sangeethnandakumar/Twileloop.UOW</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sangeethnandakumar/Twileloop.UOW</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>uow, litedb, unit of work, repository</PackageTags>
+		<Description>
+			This .NET library is a pre-built implementation of the unit of work pattern using LiteDB, providing a simple and efficient way to manage database operations.
+		</Description>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="logo.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="NPOI" Version="2.6.0" />
