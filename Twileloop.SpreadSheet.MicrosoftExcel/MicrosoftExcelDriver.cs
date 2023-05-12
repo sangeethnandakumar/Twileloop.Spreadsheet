@@ -260,8 +260,7 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
         {
             ValidatePrerequisites();
             CellReference startReference = new CellReference(startAddress);
-            CellReference cellReference = new CellReference(startAddress);
-            WriteSelection(startReference.Row, startReference.Col + 1, data);
+           WriteSelection(startReference.Row, startReference.Col , data);
         }
 
         public void Dispose()

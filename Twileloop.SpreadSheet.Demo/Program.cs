@@ -9,32 +9,67 @@ namespace Twileloop.SpreadSheet.Demo
     public class Program
     {
         public static void Main(string[] args)
-        {            
+        {
 
 
             //Step 1: Initialize your spreadsheet drivers
             var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
             {
-                FileLocation = "<YOUR_EXCEL_FILE_LOCATION>"
+                FileLocation = @"C:\Users\Sangeeth Nandakumar\OneDrive\Desktop\Demo.xlsx"
             });
 
             var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
             {
-                SheetsURI = new Uri("<YOUR_GOOGLE_SHEETS_URL>"),
-                Credential = "secrets.json"
+                SheetsURI = new Uri("https://docs.google.com/spreadsheets/d/18roEDKYpgYfKDj0rQlnt7QC3b31Eb24DAoH0S4CiALQ/edit#gid=0"),
+                Credential = @"D:\secrets.json"
             });
 
             //Step 2: Use that driver to build a spreadsheet accessor
             var excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
             var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheetsDriver);
 
-            //Step 3: Now this accessor can Read/Write and Control spreadsheet. Let's open Sheet1
+
+
+
+            //Step 4: Different Ways To Write Data
+            using (excelAccessor)
+            {
+                //Load prefered sheet
+                excelAccessor.Controller.LoadSheet("Major");
+
+                var a = 10;
+
+                //Read a single cell
+                string data1 = excelAccessor.Reader.ReadCell(1, 1);
+                string data2 = excelAccessor.Reader.ReadCell("A10");
+
+                //Read a full row in bulk
+                string[] data3 = excelAccessor.Reader.ReadRow(1);
+                string[] data4 = excelAccessor.Reader.ReadRow("C9");
+
+                //Read a full column in bulk
+                string[] data5 = excelAccessor.Reader.ReadColumn(1);
+                string[] data6 = excelAccessor.Reader.ReadColumn("D20");
+
+                //Select an area and extract data in bulk
+                DataTable data7 = excelAccessor.Reader.ReadSelection(1, 1, 10, 2);
+                DataTable data8 = excelAccessor.Reader.ReadSelection("A1", "D10");
+
+                Console.Clear();
+
+                DrawDataTable(data7);
+                DrawDataTable(data8);
+
+                excelAccessor.Writer.WriteSelection("C1", data7);
+            }
+
+
 
 
             //Step 4: Different Ways To Write Data
             using (googleSheetAccessor)
             {
-                googleSheetAccessor.Controller.LoadSheet("Sheet1");
+                googleSheetAccessor.Controller.LoadSheet("Major");
 
                 //Write a single cell
                 googleSheetAccessor.Writer.WriteCell(1, 1, "Country");
