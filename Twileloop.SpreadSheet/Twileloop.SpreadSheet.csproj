@@ -5,14 +5,15 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>9.0</LangVersion>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<Title>LiteDB Unit Of Work</Title>
+		<Title>Twileloop.SpreadSheet</Title>
 		<Authors>Twileloop, Sangeeth Nandakumar</Authors>
-		<PackageProjectUrl>https://github.com/sangeethnandakumar/Twileloop.UOW</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/sangeethnandakumar/Twileloop.UOW</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/sangeethnandakumar/Twileloop.SpreadSheet</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sangeethnandakumar/Twileloop.SpreadSheet</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<PackageTags>uow, litedb, unit of work, repository</PackageTags>
+		<PackageTags>spreadsheet, excel, googlesheet</PackageTags>
 		<Description>
-			This .NET library is a pre-built implementation of the unit of work pattern using LiteDB, providing a simple and efficient way to manage database operations.
+			A highly extensible and generic package provides a simple and straightforward approach to read, write, copy, and move data across various spreadsheet formats.
+			Seamlessly integrate with popular spreadsheet drivers and take control of your data simple and effortlessly
 		</Description>
 		<PackageIcon>logo.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
