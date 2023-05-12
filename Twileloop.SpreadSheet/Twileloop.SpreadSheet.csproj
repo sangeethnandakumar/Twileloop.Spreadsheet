@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>9.0</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="NPOI" Version="2.6.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
+		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.60.0.2979" />
+		<PackageReference Include="Google.Cloud.Vision.V1" Version="3.3.0" />
+		<PackageReference Include="Grpc.Core" Version="2.46.6" />
+	</ItemGroup>
+
+</Project>
