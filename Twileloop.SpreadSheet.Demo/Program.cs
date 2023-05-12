@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System.Data;
+using Twileloop.SpreadSheet.Extensions;
 using Twileloop.SpreadSheet.Factory;
 using Twileloop.SpreadSheet.GoogleSheet;
 using Twileloop.SpreadSheet.MicrosoftExcel;
@@ -11,8 +12,7 @@ namespace Twileloop.SpreadSheet.Demo
         public static void Main(string[] args)
         {
 
-
-            //Step 1: Initialize your spreadsheet drivers
+            //Initialize your spreadsheet drivers
             var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
             {
                 FileLocation = @"C:\Users\Sangeeth Nandakumar\OneDrive\Desktop\Demo.xlsx"
@@ -24,35 +24,31 @@ namespace Twileloop.SpreadSheet.Demo
                 Credential = @"D:\secrets.json"
             });
 
-            //Step 2: Use that driver to build a spreadsheet accessor
+
+            //Use that driver to build a spreadsheet accessor
             var excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
             var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheetsDriver);
 
 
+            ////Read and write both spreadsheets at once
+            //using (excelAccessor)
+            //{
+            //    using (googleSheetAccessor)
+            //    {
+            //        //Step 1: Open both spreadsheets
+            //        excelAccessor.Controller.LoadSheet("Sheet1");
+            //        googleSheetAccessor.Controller.LoadSheet("Sheet1");
+
+            //        //Step 2: Read from excel
+            //        DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
+
+            //        //Step 3: Then write it to Google Sheet
+            //        googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
+            //    }
+            //}
 
 
-            //Read and write both spreadsheets at once
-            using (excelAccessor)
-            {
-                using (googleSheetAccessor)
-                {
-                    //Step 1: Open both spreadsheets
-                    excelAccessor.Controller.LoadSheet("Sheet1");
-                    googleSheetAccessor.Controller.LoadSheet("Sheet1");
-
-                    //Step 2: Read from excel
-                    DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
-
-                    //Step 3: Then write it to Google Sheet
-                    googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
-                }
-            }
-
-
-
-
-
-            //Step 4: Different Ways To Write Data
+            //Different Ways To Write Data
             using (excelAccessor)
             {
                 using (googleSheetAccessor)
@@ -157,7 +153,7 @@ namespace Twileloop.SpreadSheet.Demo
 
         public static void DrawDataTable(DataTable dataTable)
         {
-            var table = new Spectre.Console.Table();
+            var table = new Table();
             foreach (DataColumn column in dataTable.Columns)
             {
                 table.AddColumn(column.ColumnName);
@@ -167,7 +163,7 @@ namespace Twileloop.SpreadSheet.Demo
                 var rowData = row.ItemArray.Select(cell => cell.ToString()).ToArray();
                 table.AddRow(rowData);
             }
-            Spectre.Console.AnsiConsole.Render(table);
+            AnsiConsole.Render(table);
         }
 
     }
