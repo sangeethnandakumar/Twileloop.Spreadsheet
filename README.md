@@ -88,7 +88,7 @@ An accessor wil give you 3 handles:
 - **Controller** => Use this handle to control your spreadsheets
 
 ## 5. Load WorkSheet
-Load your prefered sheet by controlling the spreadsheet
+First step is to load your prefered sheet by controlling the spreadsheet
 > You must load a worksheet using the Controller before reading or writing to your spreadsheet
 
 ```csharp
