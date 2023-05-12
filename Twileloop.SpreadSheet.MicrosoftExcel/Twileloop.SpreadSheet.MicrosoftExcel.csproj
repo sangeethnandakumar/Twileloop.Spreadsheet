@@ -33,5 +33,11 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Twileloop.SpreadSheet\Twileloop.SpreadSheet.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="logo.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 	
 </Project>
