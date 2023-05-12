@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Twileloop.SpreadSheet.GoogleSheet\Twileloop.SpreadSheet.GoogleSheet.csproj" />
     <ProjectReference Include="..\Twileloop.SpreadSheet.MicrosoftExcel\Twileloop.SpreadSheet.MicrosoftExcel.csproj" />
     <ProjectReference Include="..\Twileloop.SpreadSheet\Twileloop.SpreadSheet.csproj" />
   </ItemGroup>
