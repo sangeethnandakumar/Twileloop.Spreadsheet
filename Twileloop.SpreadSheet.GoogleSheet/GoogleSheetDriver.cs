@@ -344,5 +344,41 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         {
             GC.SuppressFinalize(this);
         }
+
+        public string[] GetSheets()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateSheets(params string[] sheetNames)
+        {
+            ValidatePrerequisites();
+            var requests = new List<Request>();
+
+            foreach (string sheetTitle in sheetNames)
+            {
+                // Create the new sheet request
+                var addSheetRequest = new AddSheetRequest
+                {
+                    Properties = new SheetProperties
+                    {
+                        Title = sheetTitle
+                    }
+                };
+
+                // Add the request to the batch update requests
+                requests.Add(new Request { AddSheet = addSheetRequest });
+            }
+
+            // Create the batch update request
+            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = requests
+            };
+
+            // Execute the batch update request
+            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SheetId);
+            batchUpdateRequest.Execute();
+        }
     }
 }

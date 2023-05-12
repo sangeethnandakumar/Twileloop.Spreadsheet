@@ -271,5 +271,22 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             xfile.Close();
             GC.SuppressFinalize(this);
         }
+
+        public string[] GetSheets()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CreateSheets(params string[] sheetNames)
+        {
+            ValidatePrerequisites();
+            foreach (string sheetName in sheetNames)
+            {
+                if (workbook.GetSheetIndex(sheetName) == -1)
+                {
+                    workbook.CreateSheet(sheetName);
+                }
+            }
+        }
     }
 }
