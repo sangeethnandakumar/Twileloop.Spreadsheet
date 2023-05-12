@@ -36,10 +36,12 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 > There is no need to install all these driver packages, If you only prefer to work with Microsoft Excel, ignore the Google Sheets driver package
 
 
-| To Use | Install Package   
-| :---:   | :---:
-| Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet --version <LATEST VERSION>`  
-| Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel --version <LATEST VERSION>`  
+
+
+| Driver | To Use | Install Package   
+| :---: | :---:   | :---:
+| <img src="https://iili.io/HUaMOEG.png" alt="Logo" height="30"> | Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet --version <LATEST VERSION>`  
+| <img src="https://iili.io/HUaM8Yl.png" alt="Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel --version <LATEST VERSION>`  
 
 ## 3. Initialize Driver(s) 
 Once installed packages, Initialize your drivers
