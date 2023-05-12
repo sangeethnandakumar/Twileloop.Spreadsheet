@@ -45,10 +45,6 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 
 ### Supported Features
 
-✅ - Available
-🚧 - Work In Progress
-❌ - Not Available
-
 | Feature     | Microsoft Excel | Google Sheets
 | ---      | ---       | ---
 | Plan Text Reads | ✅ | ✅
@@ -60,6 +56,10 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 | Image Writes | 🚧 | 🚧
 | Set Formulas | ❌ | ❌
 | Draw Graph | ❌ | ❌
+
+✅ - Available &nbsp;&nbsp;&nbsp; 
+🚧 - Work In Progress &nbsp;&nbsp;&nbsp; 
+❌ - Not Available
 
 ## 3. Initialize Driver(s) 
 Once installed packages, Initialize your drivers
@@ -127,7 +127,7 @@ First step is to load your prefered sheet by controlling the spreadsheet
     }
 ```
 
-## 6. Different Ways To - Read Data
+## 6. Read SpreadSheet
 Reading is as simple as this
 
 ```csharp
@@ -160,7 +160,7 @@ Reading is as simple as this
 > Bulk reads/writes will fire only once and get data in one go. If you just need to read a single cell, Feel free to use `ReadCell()` since it makes sense in a read and drop situation
 
 
-## 8. Different Ways To - Write Data
+## 7. Write SpreadSheet
 Writing is as simple as this
 
 ```csharp
@@ -194,5 +194,27 @@ Writing is as simple as this
     
         googleSheetAccessor.Writer.WriteSelection(1, 1, grid);
         googleSheetAccessor.Writer.WriteSelection("D20", grid);
+    }
+```
+
+## 8. Read/Write Multiple SpreadSheets In One Go
+Open multiple spreadsheets in one go by cascading accessors then move data in between
+
+```csharp
+    //Read and write both spreadsheets at once
+    using (excelAccessor)
+    {
+        using (googleSheetAccessor)
+        {
+            //Step 1: Open both spreadsheets
+            excelAccessor.Controller.LoadSheet("Sheet1");
+            googleSheetAccessor.Controller.LoadSheet("Sheet1");
+    
+            //Step 2: Read from excel
+            DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
+    
+            //Step 3: Then write it to Google Sheet
+            googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
+        }
     }
 ```

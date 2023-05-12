@@ -128,7 +128,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public string[] ReadRow(int rowIndex)
         {
-            string range = $"{SheetName}!A{rowIndex}:{ToColumnName(GetLastColumnIndex())}{rowIndex}";
+            string range = $"{SheetName}!{rowIndex}:{rowIndex}";
             ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
             IList<IList<object>> values = response.Values;
             if (values != null && values.Count > 0)

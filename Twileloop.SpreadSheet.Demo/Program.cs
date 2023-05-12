@@ -31,37 +31,89 @@ namespace Twileloop.SpreadSheet.Demo
 
 
 
+            //Read and write both spreadsheets at once
+            using (excelAccessor)
+            {
+                using (googleSheetAccessor)
+                {
+                    //Step 1: Open both spreadsheets
+                    excelAccessor.Controller.LoadSheet("Sheet1");
+                    googleSheetAccessor.Controller.LoadSheet("Sheet1");
+
+                    //Step 2: Read from excel
+                    DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
+
+                    //Step 3: Then write it to Google Sheet
+                    googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
+                }
+            }
+
+
+
+
+
             //Step 4: Different Ways To Write Data
             using (excelAccessor)
             {
-                //Load prefered sheet
-                excelAccessor.Controller.LoadSheet("Major");
+                using (googleSheetAccessor)
+                {
+                    //Load prefered sheet
+                    excelAccessor.Controller.LoadSheet("Major");
 
-                var a = 10;
+                    //Read a single cell
+                    string data1 = excelAccessor.Reader.ReadCell(1, 1);
+                    string data2 = excelAccessor.Reader.ReadCell("A10");
 
-                //Read a single cell
-                string data1 = excelAccessor.Reader.ReadCell(1, 1);
-                string data2 = excelAccessor.Reader.ReadCell("A10");
+                    //Read a full row in bulk
+                    string[] data3 = excelAccessor.Reader.ReadRow(1);
+                    string[] data4 = excelAccessor.Reader.ReadRow("C9");
 
-                //Read a full row in bulk
-                string[] data3 = excelAccessor.Reader.ReadRow(1);
-                string[] data4 = excelAccessor.Reader.ReadRow("C9");
+                    //Read a full column in bulk
+                    string[] data5 = excelAccessor.Reader.ReadColumn(1);
+                    string[] data6 = excelAccessor.Reader.ReadColumn("D20");
 
-                //Read a full column in bulk
-                string[] data5 = excelAccessor.Reader.ReadColumn(1);
-                string[] data6 = excelAccessor.Reader.ReadColumn("D20");
+                    //Select an area and extract data in bulk
+                    DataTable data7 = excelAccessor.Reader.ReadSelection(1, 1, 10, 2);
+                    DataTable data8 = excelAccessor.Reader.ReadSelection("A1", "D10");
 
-                //Select an area and extract data in bulk
-                DataTable data7 = excelAccessor.Reader.ReadSelection(1, 1, 10, 2);
-                DataTable data8 = excelAccessor.Reader.ReadSelection("A1", "D10");
+                    Console.Clear();
 
-                Console.Clear();
+                    DrawDataTable(data7);
+                    DrawDataTable(data8);
 
-                DrawDataTable(data7);
-                DrawDataTable(data8);
+                    excelAccessor.Writer.WriteSelection("C1", data7);
 
-                excelAccessor.Writer.WriteSelection("C1", data7);
+
+                    //Load sheet
+                    googleSheetAccessor.Controller.LoadSheet("Major");
+
+                    //Read a single cell
+                    data1 = googleSheetAccessor.Reader.ReadCell(1, 1);
+                    data2 = googleSheetAccessor.Reader.ReadCell("A10");
+
+                    //Read a full row in bulk
+                    data3 = googleSheetAccessor.Reader.ReadRow(1);
+                    data4 = googleSheetAccessor.Reader.ReadRow("C9");
+
+                    //Read a full column in bulk
+                    data5 = googleSheetAccessor.Reader.ReadColumn(1);
+                    data6 = googleSheetAccessor.Reader.ReadColumn("D20");
+
+                    //Select an area and extract data in bulk
+                    data7 = googleSheetAccessor.Reader.ReadSelection(1, 1, 10, 2);
+                    data8 = googleSheetAccessor.Reader.ReadSelection("A1", "D10");
+
+                    Console.Clear();
+
+                    DrawDataTable(data7);
+                    DrawDataTable(data8);
+
+                    googleSheetAccessor.Writer.WriteSelection("C1", data7);
+                }
             }
+
+
+           
 
 
 
