@@ -1,6 +1,5 @@
 ﻿using Spectre.Console;
 using System.Data;
-using Twileloop.SpreadSheet.Extensions;
 using Twileloop.SpreadSheet.Factory;
 using Twileloop.SpreadSheet.GoogleSheet;
 using Twileloop.SpreadSheet.MicrosoftExcel;
@@ -29,142 +28,23 @@ namespace Twileloop.SpreadSheet.Demo
             var excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
             var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheetsDriver);
 
-
-            ////Read and write both spreadsheets at once
-            //using (excelAccessor)
-            //{
-            //    using (googleSheetAccessor)
-            //    {
-            //        //Step 1: Open both spreadsheets
-            //        excelAccessor.Controller.LoadSheet("Sheet1");
-            //        googleSheetAccessor.Controller.LoadSheet("Sheet1");
-
-            //        //Step 2: Read from excel
-            //        DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
-
-            //        //Step 3: Then write it to Google Sheet
-            //        googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
-            //    }
-            //}
-
-
-            //Different Ways To Write Data
             using (excelAccessor)
             {
                 using (googleSheetAccessor)
                 {
-                    //Load prefered sheet
                     excelAccessor.Controller.LoadSheet("Major");
-
-                    //Read a single cell
-                    string data1 = excelAccessor.Reader.ReadCell(1, 1);
-                    string data2 = excelAccessor.Reader.ReadCell("A10");
-
-                    //Read a full row in bulk
-                    string[] data3 = excelAccessor.Reader.ReadRow(1);
-                    string[] data4 = excelAccessor.Reader.ReadRow("C9");
-
-                    //Read a full column in bulk
-                    string[] data5 = excelAccessor.Reader.ReadColumn(1);
-                    string[] data6 = excelAccessor.Reader.ReadColumn("D20");
-
-                    //Select an area and extract data in bulk
-                    DataTable data7 = excelAccessor.Reader.ReadSelection(1, 1, 10, 2);
-                    DataTable data8 = excelAccessor.Reader.ReadSelection("A1", "D10");
-
-                    Console.Clear();
-
-                    DrawDataTable(data7);
-                    DrawDataTable(data8);
-
-                    excelAccessor.Writer.WriteSelection("C1", data7);
-
-
-                    //Load sheet
                     googleSheetAccessor.Controller.LoadSheet("Major");
 
-                    //Read a single cell
-                    data1 = googleSheetAccessor.Reader.ReadCell(1, 1);
-                    data2 = googleSheetAccessor.Reader.ReadCell("A10");
+                    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
+                    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
 
-                    //Read a full row in bulk
-                    data3 = googleSheetAccessor.Reader.ReadRow(1);
-                    data4 = googleSheetAccessor.Reader.ReadRow("C9");
+                    var allExcelSheets = excelAccessor.Controller.GetSheets();
+                    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
 
-                    //Read a full column in bulk
-                    data5 = googleSheetAccessor.Reader.ReadColumn(1);
-                    data6 = googleSheetAccessor.Reader.ReadColumn("D20");
-
-                    //Select an area and extract data in bulk
-                    data7 = googleSheetAccessor.Reader.ReadSelection(1, 1, 10, 2);
-                    data8 = googleSheetAccessor.Reader.ReadSelection("A1", "D10");
-
-                    Console.Clear();
-
-                    DrawDataTable(data7);
-                    DrawDataTable(data8);
-
-                    googleSheetAccessor.Writer.WriteSelection("C1", data7);
+                    //excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
+                    //googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
                 }
             }
-
-
-           
-
-
-
-
-            //Step 4: Different Ways To Write Data
-            using (googleSheetAccessor)
-            {
-                googleSheetAccessor.Controller.LoadSheet("Major");
-
-                //Write a single cell
-                googleSheetAccessor.Writer.WriteCell(1, 1, "Country");
-                googleSheetAccessor.Writer.WriteCell("C17", "Country");
-
-                //Write a full row in bulk
-                googleSheetAccessor.Writer.WriteRow(1, new string[] { "USA", "China", "Russia", "India" });
-                googleSheetAccessor.Writer.WriteRow("A1", new string[] { "USA", "China", "Russia", "India" });
-
-                //Write a full column in bulk
-                googleSheetAccessor.Writer.WriteColumn(1, new string[] { "USA", "China", "Russia", "India" });
-                googleSheetAccessor.Writer.WriteColumn("B22", new string[] { "USA", "China", "Russia", "India" });
-
-                //Select an area and write a grid in bulk
-                DataTable grid = new DataTable();
-                grid.Columns.Add("Rank");
-                grid.Columns.Add("Powerfull Militaries");
-
-                grid.Rows.Add(1, "USA");
-                grid.Rows.Add(2, "China");
-                grid.Rows.Add(3, "Russia");
-                grid.Rows.Add(4, "India");
-                grid.Rows.Add(5, "France");
-
-                googleSheetAccessor.Writer.WriteSelection(1, 1, grid);
-                googleSheetAccessor.Writer.WriteSelection("D20", grid);
-            }
-
-
-
         }
-
-
-        public static void DrawDataTable(DataTable dataTable)
-        {
-            var table = new Table();
-            foreach (DataColumn column in dataTable.Columns)
-            {
-                table.AddColumn(column.ColumnName);
-            }
-            foreach (DataRow row in dataTable.Rows)
-            {
-                var rowData = row.ItemArray.Select(cell => cell.ToString()).ToArray();
-                table.AddRow(rowData);
-            }
-            AnsiConsole.Render(table);
-        }
-
     }
 }

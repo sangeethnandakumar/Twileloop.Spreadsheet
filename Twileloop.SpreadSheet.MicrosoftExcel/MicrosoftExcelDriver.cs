@@ -274,7 +274,19 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
 
         public string[] GetSheets()
         {
-            throw new NotImplementedException();
+            var sheetTitles = new string[workbook.NumberOfSheets];
+            for (int i = 0; i < workbook.NumberOfSheets; i++)
+            {
+                sheetTitles[i] = workbook.GetSheetName(i);
+            }
+            return sheetTitles;
+        }
+
+        public string GetActiveSheet()
+        {
+            var activeSheetIndex = workbook.ActiveSheetIndex;
+            var activeSheetTitle = workbook.GetSheetName(activeSheetIndex);
+            return activeSheetTitle;
         }
 
         public void CreateSheets(params string[] sheetNames)

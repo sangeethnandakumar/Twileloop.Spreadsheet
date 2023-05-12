@@ -345,10 +345,6 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             GC.SuppressFinalize(this);
         }
 
-        public string[] GetSheets()
-        {
-            throw new NotImplementedException();
-        }
 
         public void CreateSheets(params string[] sheetNames)
         {
@@ -380,5 +376,21 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SheetId);
             batchUpdateRequest.Execute();
         }
+
+        public string[] GetSheets()
+        {
+            var spreadsheet = googleSheets.Spreadsheets.Get(SheetId).Execute();
+            var sheetTitles = spreadsheet.Sheets.Select(sheet => sheet.Properties.Title).ToArray();
+            return sheetTitles;
+        }
+
+        public string GetActiveSheet()
+        {
+            var spreadsheet = googleSheets.Spreadsheets.Get(SheetId).Execute();
+            var sheets = spreadsheet.Sheets;
+            var activeSheetTitle = sheets[0].Properties.Title;
+            return activeSheetTitle;
+        }
+
     }
 }

@@ -5,6 +5,7 @@
         void LoadSheet(string sheetName);
         void CreateSheets(params string[] sheetNames);
         string[] GetSheets();
+        string GetActiveSheet();
     }
 
 }
