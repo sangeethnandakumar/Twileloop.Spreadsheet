@@ -24,8 +24,8 @@ A cross format spreadsheet accessor that empowers you to effortlessly read, writ
 - The core `Twileloop.SpreadSheet` package
 - A driver package for your desired spreadsheet (Microsoft Excel, Google Sheet etc...)
 
-#### Disclaimer:
-***In the backstage, Twileloop.SpreadSheet uses NPOI to connect with Excel files and Google.Apis.Sheets.v4 to connect with Google Sheets***
+> **Note**
+> ***In the backstage, Twileloop.SpreadSheet uses NPOI to connect with Excel files and Google.Apis.Sheets.v4 to connect with Google Sheets***
 
 <hr/>
 
@@ -77,11 +77,14 @@ Once installed packages, Initialize your drivers
     var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
     {
         SheetsURI = new Uri("<YOUR_GOOGLE_SHEETS_URL>"),
-        Credential = "secrets.json"
+        Credential = "secrets.json" //Location of your credential file
     });
 ```
+> **Warning**
+> ***If planning to use Excel fomat, Avoid opening your spreadsheet in Microsoft Excel at the same time while Twileloop.SpreadSheet is using it***
 
-> If you're planning to use Google Sheets, You have to:
+> **Warning**
+> ***If planning to use Google Sheets, You have to:***
 1. Create a service account
 1. Download the credentials `secrets.json` from GCP console
 1. Enable Google Sheets API in your GCP portal
