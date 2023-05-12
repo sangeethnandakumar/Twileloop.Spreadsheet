@@ -1,4 +1,4 @@
-name: "NuGet Publish"
+name: "SpreadSheet - NuGet Publish"
 
 on:
   workflow_dispatch:
