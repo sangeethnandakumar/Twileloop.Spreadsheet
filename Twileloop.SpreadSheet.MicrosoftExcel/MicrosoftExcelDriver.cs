@@ -1,11 +1,16 @@
-﻿using NPOI.SS.UserModel;
+﻿using NPOI.HSSF.UserModel;
+using NPOI.HSSF.Util;
+using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using Twileloop.SpreadSheet.Constructs;
+using Twileloop.SpreadSheet.Factory.Abstractions;
 using Twileloop.SpreadSheet.Factory.Base;
+using Twileloop.SpreadSheet.Formating;
 
 namespace Twileloop.SpreadSheet.MicrosoftExcel
 {
@@ -260,7 +265,7 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
         {
             ValidatePrerequisites();
             CellReference startReference = new CellReference(startAddress);
-           WriteSelection(startReference.Row, startReference.Col , data);
+            WriteSelection(startReference.Row, startReference.Col, data);
         }
 
         public void Dispose()
@@ -271,5 +276,147 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             xfile.Close();
             GC.SuppressFinalize(this);
         }
+
+        public string[] GetSheets()
+        {
+            var sheetTitles = new string[workbook.NumberOfSheets];
+            for (int i = 0; i < workbook.NumberOfSheets; i++)
+            {
+                sheetTitles[i] = workbook.GetSheetName(i);
+            }
+            return sheetTitles;
+        }
+
+        public string GetActiveSheet()
+        {
+            var activeSheetIndex = workbook.ActiveSheetIndex;
+            var activeSheetTitle = workbook.GetSheetName(activeSheetIndex);
+            return activeSheetTitle;
+        }
+
+        public void CreateSheets(params string[] sheetNames)
+        {
+            ValidatePrerequisites();
+            foreach (string sheetName in sheetNames)
+            {
+                if (workbook.GetSheetIndex(sheetName) == -1)
+                {
+                    workbook.CreateSheet(sheetName);
+                }
+            }
+        }
+
+        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, Formatting formatting)
+        {
+            startRow--;
+            startColumn--;
+            endRow--;
+            endColumn--;
+
+            // Apply text formatting
+            if (formatting.TextFormating is not null)
+            {
+                for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
+                {
+                    var row = sheet.GetRow(rowIndex);
+                    if (row == null)
+                        continue;
+
+                    for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                    {
+                        var cell = row.GetCell(columnIndex);
+                        if (cell == null)
+                            continue;
+
+                        var cellStyle = cell.CellStyle ?? workbook.CreateCellStyle();
+                        XSSFFont font = (XSSFFont)cellStyle.GetFont(workbook) ?? (XSSFFont)workbook.CreateFont();
+
+                        font.IsBold = formatting.TextFormating.Bold;
+                        font.IsItalic = formatting.TextFormating.Italic;
+                        font.Underline = formatting.TextFormating.Underline ? FontUnderlineType.Single : FontUnderlineType.None;
+                        font.FontHeightInPoints = formatting.TextFormating.Size;
+                        font.FontName = formatting.TextFormating.Font;
+                        font.SetColor(GetXSSFColor(formatting.TextFormating.Color));
+                        cellStyle.SetFont(font);
+
+                        // Set horizontal alignment
+                        cellStyle.Alignment = ConvertToNPOIHorizontalAlignment(formatting.TextFormating.HorizontalAlignment);
+
+                        // Set vertical alignment
+                        cellStyle.VerticalAlignment = ConvertToNPOIVerticalAlignment(formatting.TextFormating.VerticalAlignment);
+
+                        cell.CellStyle = cellStyle;
+                    }
+                }
+
+                // Apply cell formatting
+                if (formatting.CellFormating is not null)
+                {
+                    for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
+                    {
+                        var row = sheet.GetRow(rowIndex);
+                        if (row == null)
+                            continue;
+
+                        for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                        {
+                            XSSFCell cell = (XSSFCell)row.GetCell(columnIndex);
+                            if (cell == null)
+                                continue;
+
+                            XSSFCellStyle cellStyle = (XSSFCellStyle)(cell.CellStyle ?? workbook.CreateCellStyle());
+                            cellStyle.FillPattern = FillPattern.SolidForeground;
+
+                            var xssfColor = GetXSSFColor(formatting.CellFormating.BackgroundColor);
+                            cellStyle.SetFillForegroundColor(xssfColor);
+
+                            cell.CellStyle = cellStyle;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private XSSFColor GetXSSFColor(System.Drawing.Color color)
+        {
+            byte[] rgb = new byte[3];
+            rgb[0] = color.R;
+            rgb[1] = color.G;
+            rgb[2] = color.B;
+            return new XSSFColor(rgb);
+        }
+
+        private HorizontalAlignment ConvertToNPOIHorizontalAlignment(HorizontalAllignment alignment)
+        {
+            switch (alignment)
+            {
+                case HorizontalAllignment.LEFT:
+                    return HorizontalAlignment.Left;
+                case HorizontalAllignment.CENTER:
+                    return HorizontalAlignment.Center;
+                case HorizontalAllignment.RIGHT:
+                    return HorizontalAlignment.Right;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(alignment));
+            }
+        }
+
+        private VerticalAlignment ConvertToNPOIVerticalAlignment(VerticalAllignment alignment)
+        {
+            switch (alignment)
+            {
+                case VerticalAllignment.TOP:
+                    return VerticalAlignment.Top;
+                case VerticalAllignment.MIDDLE:
+                    return VerticalAlignment.Center;
+                case VerticalAllignment.BOTTOM:
+                    return VerticalAlignment.Bottom;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(alignment));
+            }
+        }
+
+
     }
 }
