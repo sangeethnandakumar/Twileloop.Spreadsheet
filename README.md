@@ -53,6 +53,7 @@ dotnet add package Twileloop.SpreadSheet
 | Text Formatting | ✅ | ✅
 | Cell Formatting | ✅ | ✅
 | Border Formatting | 🚧 | 🚧
+| Cell Merging | 🚧 | 🚧
 | Image Reads | 🚧 | 🚧
 | Image Writes | 🚧 | 🚧
 | Formulas | ❌ | ❌
