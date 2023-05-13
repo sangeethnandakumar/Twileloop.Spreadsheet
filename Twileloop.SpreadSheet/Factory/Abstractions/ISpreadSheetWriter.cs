@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using Twileloop.SpreadSheet.Formating;
 
 namespace Twileloop.SpreadSheet.Factory.Abstractions
 {
@@ -14,8 +15,7 @@ namespace Twileloop.SpreadSheet.Factory.Abstractions
         public void WriteSelection(int startRow, int startColumn, DataTable data);
         public void WriteSelection(string startAddress, DataTable data);
 
-        public void ApplyFormatting(string startAddress, string endAddress, IFormatting formating);
-        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, IFormatting formating);
+        void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, Formatting formatting);
     }
 }
 

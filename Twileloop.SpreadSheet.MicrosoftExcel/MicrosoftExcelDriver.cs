@@ -306,13 +306,7 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             }
         }
 
-        public void ApplyFormatting(string startAddress, string endAddress, IFormatting formating)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, IFormatting formatting)
+        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, Formatting formatting)
         {
             startRow--;
             startColumn--;
@@ -320,7 +314,7 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             endColumn--;
 
             // Apply text formatting
-            if (formatting is TextFormating textFormatting)
+            if (formatting.TextFormating is not null)
             {
                 for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
                 {
@@ -337,54 +331,52 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
                         var cellStyle = cell.CellStyle ?? workbook.CreateCellStyle();
                         XSSFFont font = (XSSFFont)cellStyle.GetFont(workbook) ?? (XSSFFont)workbook.CreateFont();
 
-                        font.IsBold = textFormatting.Bold;
-                        font.IsItalic = textFormatting.Italic;
-                        font.Underline = textFormatting.Underline ? FontUnderlineType.Single : FontUnderlineType.None;
-                        font.FontHeightInPoints = textFormatting.Size;
-                        font.FontName = textFormatting.Font;
-                        font.SetColor(GetXSSFColor(textFormatting.Color));
+                        font.IsBold = formatting.TextFormating.Bold;
+                        font.IsItalic = formatting.TextFormating.Italic;
+                        font.Underline = formatting.TextFormating.Underline ? FontUnderlineType.Single : FontUnderlineType.None;
+                        font.FontHeightInPoints = formatting.TextFormating.Size;
+                        font.FontName = formatting.TextFormating.Font;
+                        font.SetColor(GetXSSFColor(formatting.TextFormating.Color));
                         cellStyle.SetFont(font);
 
                         // Set horizontal alignment
-                        cellStyle.Alignment = ConvertToNPOIHorizontalAlignment(textFormatting.HorizontalAlignment);
+                        cellStyle.Alignment = ConvertToNPOIHorizontalAlignment(formatting.TextFormating.HorizontalAlignment);
 
                         // Set vertical alignment
-                        cellStyle.VerticalAlignment = ConvertToNPOIVerticalAlignment(textFormatting.VerticalAlignment);
+                        cellStyle.VerticalAlignment = ConvertToNPOIVerticalAlignment(formatting.TextFormating.VerticalAlignment);
 
                         cell.CellStyle = cellStyle;
                     }
                 }
-            }
 
-            // Apply cell formatting
-            // Apply cell formatting
-            if (formatting is CellFormating cellFormatting)
-            {
-                for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
+                // Apply cell formatting
+                if (formatting.CellFormating is not null)
                 {
-                    var row = sheet.GetRow(rowIndex);
-                    if (row == null)
-                        continue;
-
-                    for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                    for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
                     {
-                        XSSFCell cell = (XSSFCell)row.GetCell(columnIndex);
-                        if (cell == null)
+                        var row = sheet.GetRow(rowIndex);
+                        if (row == null)
                             continue;
 
-                        XSSFCellStyle cellStyle = (XSSFCellStyle)(cell.CellStyle ?? workbook.CreateCellStyle());
-                        cellStyle.FillPattern = FillPattern.SolidForeground;
+                        for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                        {
+                            XSSFCell cell = (XSSFCell)row.GetCell(columnIndex);
+                            if (cell == null)
+                                continue;
 
-                        var xssfColor = GetXSSFColor(cellFormatting.BackgroundColor);
-                        cellStyle.SetFillForegroundColor(xssfColor);
+                            XSSFCellStyle cellStyle = (XSSFCellStyle)(cell.CellStyle ?? workbook.CreateCellStyle());
+                            cellStyle.FillPattern = FillPattern.SolidForeground;
 
-                        cell.CellStyle = cellStyle;
+                            var xssfColor = GetXSSFColor(formatting.CellFormating.BackgroundColor);
+                            cellStyle.SetFillForegroundColor(xssfColor);
+
+                            cell.CellStyle = cellStyle;
+                        }
                     }
                 }
             }
-
-
         }
+
 
         private XSSFColor GetXSSFColor(System.Drawing.Color color)
         {

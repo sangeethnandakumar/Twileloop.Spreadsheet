@@ -407,33 +407,32 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             return sheets[0].Properties.SheetId;
         }
 
-        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, IFormatting formating)
+
+        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, Formatting formatting)
         {
             var sheetId = GetActiveSheetId();
-
             var requests = new List<Request>();
 
-            // Apply text formatting
-            if (formating is TextFormating textFormatting)
+            if (formatting.TextFormating is not null)
             {
                 var cellFormat = new CellFormat
                 {
                     TextFormat = new TextFormat
                     {
-                        Bold = textFormatting.Bold,
-                        Italic = textFormatting.Italic,
-                        Underline = textFormatting.Underline,
-                        FontSize = textFormatting.Size,
+                        Bold = formatting.TextFormating.Bold,
+                        Italic = formatting.TextFormating.Italic,
+                        Underline = formatting.TextFormating.Underline,
+                        FontSize = formatting.TextFormating.Size,
                         ForegroundColor = new Color
                         {
-                            Red = textFormatting.Color.R / 255f,
-                            Green = textFormatting.Color.G / 255f,
-                            Blue = textFormatting.Color.B / 255f
+                            Red = formatting.TextFormating.Color.R / 255f,
+                            Green = formatting.TextFormating.Color.G / 255f,
+                            Blue = formatting.TextFormating.Color.B / 255f
                         },
-                        FontFamily = textFormatting.Font
+                        FontFamily = formatting.TextFormating.Font
                     },
-                    HorizontalAlignment = textFormatting.HorizontalAlignment.ToString().ToUpper(),
-                    VerticalAlignment = textFormatting.VerticalAlignment.ToString().ToUpper(),
+                    HorizontalAlignment = formatting.TextFormating.HorizontalAlignment.ToString().ToUpper(),
+                    VerticalAlignment = formatting.TextFormating.VerticalAlignment.ToString().ToUpper(),
                 };
 
                 var repeatCellRequest = new RepeatCellRequest
@@ -462,13 +461,13 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             }
 
             // Apply cell formatting
-            if (formating is CellFormating cellFormatting)
+            if (formatting.CellFormating is not null)
             {
                 var backgroundColor = new Color
                 {
-                    Red = cellFormatting.BackgroundColor.R / 255f,
-                    Green = cellFormatting.BackgroundColor.G / 255f,
-                    Blue = cellFormatting.BackgroundColor.B / 255f
+                    Red = formatting.CellFormating.BackgroundColor.R / 255f,
+                    Green = formatting.CellFormating.BackgroundColor.G / 255f,
+                    Blue = formatting.CellFormating.BackgroundColor.B / 255f
                 };
 
                 var cellFormat = new CellFormat
@@ -497,7 +496,6 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                     },
                     Fields = "userEnteredFormat.backgroundColor"
                 };
-
                 requests.Add(new Request { RepeatCell = repeatCellRequest });
             }
 

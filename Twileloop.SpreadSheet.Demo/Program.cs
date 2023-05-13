@@ -36,31 +36,44 @@ namespace Twileloop.SpreadSheet.Demo
                     excelAccessor.Controller.LoadSheet("Major");
                     googleSheetAccessor.Controller.LoadSheet("Major");
 
-                    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, new TextFormating
+
+                    var titleFormat = new Formatting
                     {
-                        Bold = true,
-                        Italic = false,
-                        Underline = false,
-                        Size = 25,
+                        //Text formatting
+                        TextFormating = new TextFormating
+                        {
+                            Bold = false,
+                            Italic = true,
+                            Underline = false,
+                            Size = 15,
+                            HorizontalAlignment = HorizontalAllignment.RIGHT,
+                            VerticalAlignment = VerticalAllignment.BOTTOM,
+                            Font = "Impact",
+                            Color = System.Drawing.Color.White,
+                        },
+                        //Cell formatting
+                        CellFormating = new CellFormating
+                        {
+                            BackgroundColor = System.Drawing.Color.IndianRed
+                        },
+                        //Border formatting
+                        BorderFormating = new BorderFormating
+                        {
+                            TopBorder = true,
+                            LeftBorder = true,
+                            RightBorder = true,
+                            BottomBorder = true,
+                            BorderType = BorderType.SOLID,
+                            Thickness = 5
+                        }
+                    };
 
-                        Font = "Impact",
-                        Color = System.Drawing.Color.OrangeRed,
-                        HorizontalAlignment = HorizontalAllignment.CENTER,
-                        VerticalAlignment = VerticalAllignment.MIDDLE
-                    });
 
-                    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, new TextFormating
-                    {
-                        Bold = true,
-                        Italic = false,
-                        Underline = false,
-                        Size = 25,
 
-                        Font = "Impact",
-                        Color = System.Drawing.Color.OrangeRed,
-                        HorizontalAlignment = HorizontalAllignment.CENTER,
-                        VerticalAlignment = VerticalAllignment.MIDDLE
-                    });
+                    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
+                    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
+
+
 
                     //var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
                     //var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
