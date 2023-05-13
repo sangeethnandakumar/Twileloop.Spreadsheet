@@ -13,6 +13,9 @@ namespace Twileloop.SpreadSheet.Factory.Abstractions
         public void WriteColumn(string column, params string[] data);
         public void WriteSelection(int startRow, int startColumn, DataTable data);
         public void WriteSelection(string startAddress, DataTable data);
+
+        public void ApplyFormatting(string startAddress, string endAddress, IFormatting formating);
+        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, IFormatting formating);
     }
 }
 

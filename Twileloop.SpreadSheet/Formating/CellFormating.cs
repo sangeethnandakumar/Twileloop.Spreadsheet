@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using Twileloop.SpreadSheet.Factory.Abstractions;
 
-namespace Twileloop.SpreadSheet.Formatings
+namespace Twileloop.SpreadSheet.Formating
 {
     public class CellFormating : ICellFormating
     {

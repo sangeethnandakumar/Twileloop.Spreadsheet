@@ -1,6 +1,7 @@
-﻿using Spectre.Console;
-using System.Data;
+﻿using System.Diagnostics;
+using Twileloop.SpreadSheet.Constructs;
 using Twileloop.SpreadSheet.Factory;
+using Twileloop.SpreadSheet.Formating;
 using Twileloop.SpreadSheet.GoogleSheet;
 using Twileloop.SpreadSheet.MicrosoftExcel;
 
@@ -35,16 +36,47 @@ namespace Twileloop.SpreadSheet.Demo
                     excelAccessor.Controller.LoadSheet("Major");
                     googleSheetAccessor.Controller.LoadSheet("Major");
 
-                    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
-                    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
+                    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, new TextFormating
+                    {
+                        Bold = true,
+                        Italic = false,
+                        Underline = false,
+                        Size = 25,
 
-                    var allExcelSheets = excelAccessor.Controller.GetSheets();
-                    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
+                        Font = "Impact",
+                        Color = System.Drawing.Color.OrangeRed,
+                        HorizontalAlignment = HorizontalAllignment.CENTER,
+                        VerticalAlignment = VerticalAllignment.MIDDLE
+                    });
+
+                    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, new TextFormating
+                    {
+                        Bold = true,
+                        Italic = false,
+                        Underline = false,
+                        Size = 25,
+
+                        Font = "Impact",
+                        Color = System.Drawing.Color.OrangeRed,
+                        HorizontalAlignment = HorizontalAllignment.CENTER,
+                        VerticalAlignment = VerticalAllignment.MIDDLE
+                    });
+
+                    //var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
+                    //var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
+
+                    //var allExcelSheets = excelAccessor.Controller.GetSheets();
+                    //var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
 
                     //excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
                     //googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
                 }
             }
+
+            string filePath = @"C:\Users\Sangeeth Nandakumar\OneDrive\Desktop\Demo.xlsx";
+
+            Process.Start(@"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE", $"\"{filePath}\"");
+
         }
     }
 }

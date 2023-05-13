@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using Twileloop.SpreadSheet.Factory.Abstractions;
 using Twileloop.SpreadSheet.Factory.Base;
+using Twileloop.SpreadSheet.Formating;
 
 namespace Twileloop.SpreadSheet.GoogleSheet
 {
@@ -17,7 +19,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         private readonly GoogleSheetOptions config;
         private SheetsService googleSheets;
         public string SheetName { get; set; }
-        public string SheetId { get; set; }
+        public string SpreadSheetId { get; set; }
 
         public GoogleSheetDriver(GoogleSheetOptions config)
         {
@@ -34,7 +36,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             {
                 throw new IOException($"Failed to resolve SheetName");
             }
-            if (SheetId is null)
+            if (SpreadSheetId is null)
             {
                 throw new IOException($"Failed to resolve SheetId");
             }
@@ -87,13 +89,13 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 ApplicationName = config.ApplicationName,
             });
             SheetName = sheetName;
-            SheetId = GetSpreadsheetIdFromUrl(config.SheetsURI);
+            SpreadSheetId = GetSpreadsheetIdFromUrl(config.SheetsURI);
         }
 
         public string ReadCell(int row, int column)
         {
             string range = $"{SheetName}!{ToColumnName(column)}{row}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
             string cellValue = response.Values?[0]?.FirstOrDefault()?.ToString();
             return cellValue;
         }
@@ -109,7 +111,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         public string[] ReadColumn(int columnIndex)
         {
             string range = $"{SheetName}!{ToColumnName(columnIndex)}:{ToColumnName(columnIndex)}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
             IList<IList<object>> values = response.Values;
             if (values != null && values.Count > 0)
             {
@@ -129,7 +131,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         public string[] ReadRow(int rowIndex)
         {
             string range = $"{SheetName}!{rowIndex}:{rowIndex}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
             IList<IList<object>> values = response.Values;
             if (values != null && values.Count > 0)
             {
@@ -149,7 +151,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         private int GetLastColumnIndex()
         {
             string range = $"{SheetName}!1:1";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
             IList<IList<object>> values = response.Values;
             if (values != null && values.Count > 0)
             {
@@ -161,7 +163,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         public DataTable ReadSelection(int startRow, int startColumn, int endRow, int endColumn)
         {
             string range = $"{SheetName}!{ToColumnName(startColumn)}{startRow}:{ToColumnName(endColumn)}{endRow}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SheetId, range).Execute();
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
             IList<IList<object>> values = response.Values;
             if (values != null && values.Count > 0)
             {
@@ -215,7 +217,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 Values = new List<IList<object>> { new List<object> { data } }
             };
             SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SheetId, range);
+                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
         }
@@ -245,7 +247,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             }
 
             SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SheetId, range);
+                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
         }
@@ -288,7 +290,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 Values = new List<IList<object>> { new List<object>(data) }
             };
             SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SheetId, range);
+                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
         }
@@ -328,7 +330,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             }
 
             SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SheetId, range);
+                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
         }
@@ -373,24 +375,141 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             };
 
             // Execute the batch update request
-            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SheetId);
+            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SpreadSheetId);
             batchUpdateRequest.Execute();
         }
 
         public string[] GetSheets()
         {
-            var spreadsheet = googleSheets.Spreadsheets.Get(SheetId).Execute();
+            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
             var sheetTitles = spreadsheet.Sheets.Select(sheet => sheet.Properties.Title).ToArray();
             return sheetTitles;
         }
 
         public string GetActiveSheet()
         {
-            var spreadsheet = googleSheets.Spreadsheets.Get(SheetId).Execute();
+            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
             var sheets = spreadsheet.Sheets;
             var activeSheetTitle = sheets[0].Properties.Title;
             return activeSheetTitle;
         }
 
+        public void ApplyFormatting(string startAddress, string endAddress, IFormatting formating)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int? GetActiveSheetId()
+        {
+            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
+            var sheets = spreadsheet.Sheets;
+
+            return sheets[0].Properties.SheetId;
+        }
+
+        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, IFormatting formating)
+        {
+            var sheetId = GetActiveSheetId();
+
+            var requests = new List<Request>();
+
+            // Apply text formatting
+            if (formating is TextFormating textFormatting)
+            {
+                var cellFormat = new CellFormat
+                {
+                    TextFormat = new TextFormat
+                    {
+                        Bold = textFormatting.Bold,
+                        Italic = textFormatting.Italic,
+                        Underline = textFormatting.Underline,
+                        FontSize = textFormatting.Size,
+                        ForegroundColor = new Color
+                        {
+                            Red = textFormatting.Color.R / 255f,
+                            Green = textFormatting.Color.G / 255f,
+                            Blue = textFormatting.Color.B / 255f
+                        },
+                        FontFamily = textFormatting.Font
+                    },
+                    HorizontalAlignment = textFormatting.HorizontalAlignment.ToString().ToUpper(),
+                    VerticalAlignment = textFormatting.VerticalAlignment.ToString().ToUpper(),
+                };
+
+                var repeatCellRequest = new RepeatCellRequest
+                {
+                    Range = new GridRange
+                    {
+                        SheetId = sheetId,
+                        StartRowIndex = startRow - 1,
+                        EndRowIndex = endRow,
+                        StartColumnIndex = startColumn - 1,
+                        EndColumnIndex = endColumn
+                    },
+                    Cell = new CellData
+                    {
+                        UserEnteredFormat = new CellFormat
+                        {
+                            TextFormat = cellFormat.TextFormat,
+                            HorizontalAlignment = cellFormat.HorizontalAlignment,
+                            VerticalAlignment = cellFormat.VerticalAlignment
+                        }
+                    },
+                    Fields = "userEnteredFormat.textFormat,userEnteredFormat.horizontalAlignment,userEnteredFormat.verticalAlignment"
+                };
+
+                requests.Add(new Request { RepeatCell = repeatCellRequest });
+            }
+
+            // Apply cell formatting
+            if (formating is CellFormating cellFormatting)
+            {
+                var backgroundColor = new Color
+                {
+                    Red = cellFormatting.BackgroundColor.R / 255f,
+                    Green = cellFormatting.BackgroundColor.G / 255f,
+                    Blue = cellFormatting.BackgroundColor.B / 255f
+                };
+
+                var cellFormat = new CellFormat
+                {
+                    BackgroundColor = backgroundColor
+                    // Set additional cell formatting properties
+                };
+
+                var repeatCellRequest = new RepeatCellRequest
+                {
+                    Range = new GridRange
+                    {
+                        SheetId = sheetId,
+                        StartRowIndex = startRow - 1,
+                        EndRowIndex = endRow,
+                        StartColumnIndex = startColumn - 1,
+                        EndColumnIndex = endColumn
+                    },
+                    Cell = new CellData
+                    {
+                        UserEnteredFormat = new CellFormat
+                        {
+                            BackgroundColor = cellFormat.BackgroundColor
+                            // Set additional cell formatting properties
+                        }
+                    },
+                    Fields = "userEnteredFormat.backgroundColor"
+                };
+
+                requests.Add(new Request { RepeatCell = repeatCellRequest });
+            }
+
+            // Create the batch update request
+            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = requests
+            };
+
+            // Execute the batch update request
+            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SpreadSheetId);
+            batchUpdateRequest.Execute();
+        }
     }
 }

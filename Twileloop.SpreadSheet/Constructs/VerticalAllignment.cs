@@ -3,7 +3,7 @@
     public enum VerticalAllignment
     {
         TOP,
-        CENTER,
+        MIDDLE,
         BOTTOM
     }
 }

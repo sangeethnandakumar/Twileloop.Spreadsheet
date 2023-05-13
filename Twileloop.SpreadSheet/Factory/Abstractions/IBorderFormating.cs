@@ -1,6 +1,6 @@
 ﻿namespace Twileloop.SpreadSheet.Factory.Abstractions
 {
-    public interface IBorderFormating : IFormating
+    public interface IBorderFormating : IFormatting
     {
 
     }
