@@ -50,11 +50,12 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 | Plan Text Reads | ✅ | ✅
 | Plan Text Writes | ✅ | ✅
 | Switch Sheets | ✅ | ✅
-| Text Formatting | 🚧 | 🚧
-| Cell Formatting | 🚧 | 🚧
+| Text Formatting | ✅ | ✅
+| Cell Formatting | ✅ | ✅
+| Border Formatting | 🚧 | 🚧
 | Image Reads | 🚧 | 🚧
 | Image Writes | 🚧 | 🚧
-| Set Formulas | ❌ | ❌
+| Formulas | ❌ | ❌
 | Draw Graph | ❌ | ❌
 
 ✅ - Available &nbsp;&nbsp;&nbsp; 
@@ -217,4 +218,71 @@ Open multiple spreadsheets in one go by cascading accessors then move data in be
             googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
         }
     }
+```
+
+## 9. Sheets Controls
+Create one or more sheets, Get all sheets or find active sheet name
+
+```csharp
+    //Create one or more new sheets
+    excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
+    googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2");
+
+    //Get list of sheets
+    var allExcelSheets = excelAccessor.Controller.GetSheets();
+    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
+
+    //Get active sheet name
+    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
+    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
+```
+
+## 10. Styling And Formatting
+Styling is easy as hell. Just define all your different styles/formatting globally and apply it for a selected cell range
+
+A formatting can have 3 types
+- Text Formatting
+- Cell Formatting
+- Border Formatting
+
+> Keep `NULL` for whichever format type you don't want to change
+
+
+```csharp
+
+    //Define your formatting, Let's say for titles
+    var titleFormat = new Formatting
+    {
+        //Text formatting
+        TextFormating = new TextFormating
+        {
+            Bold = false,
+            Italic = true,
+            Underline = false,
+            Size = 15,
+            HorizontalAlignment = HorizontalAllignment.RIGHT,
+            VerticalAlignment = VerticalAllignment.BOTTOM,
+            Font = "Impact",
+            Color = System.Drawing.Color.White,
+        },
+        //Cell formatting
+        CellFormating = new CellFormating
+        {
+            BackgroundColor = System.Drawing.Color.IndianRed
+        },
+        //Border formatting
+        BorderFormating = new BorderFormating
+        {
+            TopBorder = true,
+            LeftBorder = true,
+            RightBorder = true,
+            BottomBorder = true,
+            BorderType = BorderType.SOLID,
+            Thickness = 5
+        }
+    };
+
+    //Then simply apply it as needed for a cell range
+    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
+    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
 ```

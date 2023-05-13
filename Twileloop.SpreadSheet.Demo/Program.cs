@@ -75,14 +75,14 @@ namespace Twileloop.SpreadSheet.Demo
 
 
 
-                    //var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
-                    //var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
+                    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
+                    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
 
-                    //var allExcelSheets = excelAccessor.Controller.GetSheets();
-                    //var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
+                    var allExcelSheets = excelAccessor.Controller.GetSheets();
+                    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
 
-                    //excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
-                    //googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
+                    excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
+                    googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
                 }
             }
 
