@@ -6,7 +6,7 @@
   </a>
 
   <h2 align="center"> Twileloop SpreadSheet</h2>
-  <h4 align="center"> Free | Cross-Format | Fast </h4>
+  <h4 align="center"> Single API | Cross-Format | Free & Fast </h4>
 </div>
 
 ## About
