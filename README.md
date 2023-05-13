@@ -83,18 +83,15 @@ Once installed packages, Initialize your drivers
     });
 ```
 > **Warning**
-> ***If planning to use Excel fomat, Avoid opening your spreadsheet in Microsoft Excel at the same time while Twileloop.SpreadSheet is using it***
-
-> **Warning**
 > ***If planning to use Google Sheets, You have to:***
-1. Create a service account
-1. Download the credentials `secrets.json` from GCP console
-1. Enable Google Sheets API in your GCP portal
-1. Then share your Google Sheet with that service account's email id with Editor permission (for write access)
+1. Create a service account in Google Cloud Platform (GCP)
+1. Download the credentials `secrets.json` from GCP console and save it
+1. Enable Google Sheets API in your GCP console
+1. Then share your Google Sheet with the service account's email id abd assign as 'Editor' (for write permission)
 
-The above process is out of scope to explain here in detail.
+The above process is out of scope to explain more here in detail.
 
-Here's a good video tutorial (Upto 3:07): https://www.youtube.com/watch?v=fxGeppjO0Mg
+Here's a good video tutorial to help you get started (Upto 3:07): https://www.youtube.com/watch?v=fxGeppjO0Mg
 
 ## 4. Get An Accessor
 Once driver(s) are initialized, Create an accessor to access the spreadsheet
