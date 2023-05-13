@@ -79,7 +79,7 @@ Once installed packages, Initialize your drivers
     var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
     {
         SheetsURI = new Uri("<YOUR_GOOGLE_SHEETS_URL>"),
-        Credential = "secrets.json" //Location of your credential file
+        Credential = @"D:\secrets.json" //Location of your credential file
     });
 ```
 > **Warning**
