@@ -31,7 +31,7 @@ A cross format spreadsheet accessor that empowers you to effortlessly read, writ
 
 ## 1. Install Core Package
 ```bash
-dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
+dotnet add package Twileloop.SpreadSheet
 ```
 
 ## 2. Install Driver Packages (One or More)
@@ -40,8 +40,8 @@ dotnet add package Twileloop.SpreadSheet --version <LATEST VERSION>
 
 | Driver | To Use | Install Package   
 | :---: | :---:   | :---:
-| <img src="https://iili.io/HUaMOEG.png" alt="Logo" height="30"> | Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet --version <LATEST VERSION>`  
-| <img src="https://iili.io/HUaM8Yl.png" alt="Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel --version <LATEST VERSION>`  
+| <img src="https://iili.io/HUaMOEG.png" alt="Logo" height="30"> | Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet`  
+| <img src="https://iili.io/HUaM8Yl.png" alt="Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel`  
 
 ### Supported Features
 
