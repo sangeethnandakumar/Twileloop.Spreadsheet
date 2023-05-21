@@ -12,6 +12,12 @@
 ## About
 A cross format spreadsheet accessor that empowers you to effortlessly read, write, copy, and move data across popular spreadsheet formats like Google Sheets and Microsoft Excel.
 
+## License
+> Twileloop.SpreadSheet is licensed under the MIT License. See the LICENSE file for more details.
+
+#### This library is absolutely free. If it gives you a smile, A small coffee would be a great way to support my work. Thank you for considering it!
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sangeethnanda)
+
 ## Integration Guide
 Read full integration guide: https://packages.twileloop.com/Twileloop.SpreadSheet
 
