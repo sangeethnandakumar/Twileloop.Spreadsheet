@@ -9,6 +9,10 @@
   <h4 align="center"> Single API | Cross-Format | Free & Fast </h4>
 </div>
 
+Read full integration guide: https://packages.twileloop.com/Twileloop.SpreadSheet
+
+More trusted packages from Twileloop: https://packages.twileloop.com
+
 ## About
 A cross format spreadsheet accessor that empowers you to effortlessly read, write, copy, and move data across popular spreadsheet formats like Google Sheets and Microsoft Excel.
 
