@@ -5,7 +5,7 @@
     <img src="https://iili.io/HUaMukB.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h1 align="center"> Twileloop SpreadSheet</h1>
+  <h1 align="center"> Twileloop.SpreadSheet</h1>
   <h4 align="center"> Single API | Cross-Format | Free & Fast </h4>
 </div>
 
