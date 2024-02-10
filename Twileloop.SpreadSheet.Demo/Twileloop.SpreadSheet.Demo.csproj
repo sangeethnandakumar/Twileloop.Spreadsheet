@@ -16,6 +16,12 @@
     <ProjectReference Include="..\Twileloop.SpreadSheet.MicrosoftExcel\Twileloop.SpreadSheet.MicrosoftExcel.csproj" />
     <ProjectReference Include="..\Twileloop.SpreadSheet\Twileloop.SpreadSheet.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="secrets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 	
 
 </Project>

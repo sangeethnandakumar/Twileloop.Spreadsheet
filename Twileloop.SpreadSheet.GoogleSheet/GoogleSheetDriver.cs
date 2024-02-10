@@ -309,7 +309,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             int numRows = startRow + data.Rows.Count; // Calculate the end row based on the number of rows in the DataTable
             int numCols = startColumn + data.Columns.Count; // Calculate the end column based on the number of columns in the DataTable
 
-            string range = $"{SheetName}!{ToColumnName(startColumn)}{startRow}:{ToColumnName(numCols - 1)}{numRows - 1}";
+            string range = $"{SheetName}!{ToColumnName(startColumn)}{startRow}:{ToColumnName(numCols - 1)}{numRows}";
             ValueRange valueRange = new ValueRange
             {
                 Values = new List<IList<object>>(data.Rows.Count)

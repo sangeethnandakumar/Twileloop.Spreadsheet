@@ -20,8 +20,8 @@ namespace Twileloop.SpreadSheet.Demo
 
             var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
             {
-                SheetsURI = new Uri("https://docs.google.com/spreadsheets/d/18roEDKYpgYfKDj0rQlnt7QC3b31Eb24DAoH0S4CiALQ/edit#gid=0"),
-                Credential = @"D:\secrets.json"
+                SheetsURI = new Uri("https://docs.google.com/spreadsheets/d/1BZTxOnwBMwcPXSJp4etagUsbkwr7N8K6T5g98V9wlvA/edit#gid=1354136408"),
+                Credential = @"secrets.json"
             });
 
 
