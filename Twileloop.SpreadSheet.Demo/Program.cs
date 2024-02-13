@@ -4,6 +4,7 @@ using Twileloop.SpreadSheet.Factory;
 using Twileloop.SpreadSheet.Formating;
 using Twileloop.SpreadSheet.GoogleSheet;
 using Twileloop.SpreadSheet.MicrosoftExcel;
+using Twileloop.Storage.GoogleDrive;
 
 namespace Twileloop.SpreadSheet.Demo
 {
@@ -11,6 +12,8 @@ namespace Twileloop.SpreadSheet.Demo
     {
         public static void Main(string[] args)
         {
+            GoogleDriveDemo().Wait();
+
 
             //Initialize your spreadsheet drivers
             var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
@@ -90,6 +93,61 @@ namespace Twileloop.SpreadSheet.Demo
 
             Process.Start(@"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE", $"\"{filePath}\"");
 
+        }
+
+        private static async Task GoogleDriveDemo()
+        {
+            // Initialize Google Drive service
+            var googleDriveService = new GoogleDriveService("drive.json", "BestSellerScrapper");
+
+            // List all files and directories
+            var items = googleDriveService.GetAllFilesAndDirectoriesAsync().Result.ToList();
+            foreach (var item in items)
+            {
+                Console.WriteLine($"{item.Name} ({item.Id})");
+            }
+
+            //Make them listed for my account in GoogleDrive
+            //foreach (var item in items)
+            //{
+            //    Console.WriteLine("Sharing with another user...");
+            //    //await googleDriveService.ShareFileWithSpecificUsers(item.Id, new List<string> { "sangeethnandakumarofficial@gmail.com" });
+
+            //    Console.WriteLine("Generating a sharable link");
+            //    var link = await googleDriveService.GenerateShareableLink(item.Id);
+            //}
+
+            //// Create a new directory
+            //await googleDriveService.CreateDirectoryAsync("NewDirectory");
+
+            // Upload a file
+            await googleDriveService.UploadFileAsync("demofile.pdf", "application/pdf", progress: (total, downloaded) =>
+            {
+                decimal percentage = Math.Round((decimal)downloaded/(decimal)total * 100,1);
+                Console.WriteLine($"[{percentage}%] Uploading {downloaded} of {total} bytes...");
+            }, chunkSizeInMB: 1);
+
+            items = googleDriveService.GetAllFilesAndDirectoriesAsync().Result.ToList();
+
+            // Rename the file
+            var file = items.First(i => i.Name == "demofile.pdf");
+            await googleDriveService.RenameFileAsync(file.Id, "renamed_demofile.jpg");
+
+            // Move the file
+            var directory = items.First(i => i.Name == "NewDirectory");
+            await googleDriveService.MoveFileAsync(file.Id, directory.Id);
+
+            // Copy the file
+            await googleDriveService.CopyFileAsync(file.Id, directory.Id);
+
+            // Download the file
+            await googleDriveService.DownloadFileAsync(file.Id, "renamed_demofile.txt", progress: (total, downloaded) =>
+            {
+                Console.WriteLine($"Downloaded {downloaded} of {total} bytes");
+            });
+
+            // Delete the file
+            await googleDriveService.DeleteFileAsync(file.Id);
         }
     }
 }

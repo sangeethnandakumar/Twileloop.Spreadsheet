@@ -8,6 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="demofile.pdf" />
+    <None Remove="drive.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="demofile.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="drive.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.48.0" />
   </ItemGroup>
 
@@ -15,6 +29,7 @@
     <ProjectReference Include="..\Twileloop.SpreadSheet.GoogleSheet\Twileloop.SpreadSheet.GoogleSheet.csproj" />
     <ProjectReference Include="..\Twileloop.SpreadSheet.MicrosoftExcel\Twileloop.SpreadSheet.MicrosoftExcel.csproj" />
     <ProjectReference Include="..\Twileloop.SpreadSheet\Twileloop.SpreadSheet.csproj" />
+    <ProjectReference Include="..\Twileloop.Storage.GoogleDrive\Twileloop.Storage.GoogleDrive.csproj" />
   </ItemGroup>
 
   <ItemGroup>
