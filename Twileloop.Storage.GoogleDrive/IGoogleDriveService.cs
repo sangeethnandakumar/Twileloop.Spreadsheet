@@ -1,4 +1,8 @@
-﻿namespace Twileloop.Storage.GoogleDrive
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Twileloop.Storage.GoogleDrive
 {
 
     public interface IGoogleDriveService

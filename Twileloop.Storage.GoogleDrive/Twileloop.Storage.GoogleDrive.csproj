@@ -1,14 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>9.0</LangVersion>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Title>Twileloop.Storage.GoogleDrive</Title>
+		<Authors>Twileloop, Sangeeth Nandakumar</Authors>
+		<PackageProjectUrl>https://github.com/sangeethnandakumar/Twileloop.Storage</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sangeethnandakumar/Twileloop.SpreadSheet</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>google drive, cloud storage, distributed storage</PackageTags>
+		<Description>
+			An easy to use package that wraps all required details for working on Google Drive APIs
+		</Description>
+		<PackageIcon>logo.png</PackageIcon>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Google.Apis.Auth" Version="1.66.0" />
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.66.0.3309" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="logo.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Google.Apis.Auth" Version="1.66.0" />
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.66.0.3309" />
+	</ItemGroup>
 
 </Project>
