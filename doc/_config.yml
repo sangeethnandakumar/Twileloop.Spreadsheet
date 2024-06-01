@@ -1,8 +1,8 @@
-title: Twileloop.Uow
-description: "Readymade Repository for LiteDB & MongoDB"
+title: Twileloop.Spreadsheet
+description: "A cross format spreadsheet accessor that empowers you to effortlessly read, write, copy, and move data across popular spreadsheet formats like Google Sheets and Microsoft Excel."
 show_downloads: true
 google_analytics:
 theme: jekyll-theme-slate
 github:
-  zip_url: https://github.com/sangeethnandakumar/Twileloop.UOW/releases
-  tar_url: https://www.nuget.org/packages/Twileloop.UOW
+  zip_url: https://github.com/sangeethnandakumar/Twileloop.Spreadsheet/releases
+  tar_url: https://www.nuget.org/packages/Twileloop.Spreadsheet
