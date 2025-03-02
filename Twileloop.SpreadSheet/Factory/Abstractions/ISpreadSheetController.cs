@@ -2,10 +2,12 @@
 {
     public interface ISpreadSheetController
     {
-        void LoadSheet(string sheetName);
+        void InitialiseWorkbook();
+        void OpenSheet(string sheetName);
         void CreateSheets(params string[] sheetNames);
         string[] GetSheets();
         string GetActiveSheet();
+        void SaveWorkbook();
     }
 
 }

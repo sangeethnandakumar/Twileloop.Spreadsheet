@@ -27,8 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Apis.Auth" Version="1.66.0" />
-		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.66.0.3148" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
+		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
 		<PackageReference Include="Grpc.Core" Version="2.46.6" />
 	</ItemGroup>
 

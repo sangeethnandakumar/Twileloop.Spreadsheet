@@ -2,15 +2,13 @@
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
-using NPOI.SS.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using Twileloop.SpreadSheet.Factory.Abstractions;
 using Twileloop.SpreadSheet.Factory.Base;
-using Twileloop.SpreadSheet.Formating;
+using Twileloop.SpreadSheet.Styling;
 
 namespace Twileloop.SpreadSheet.GoogleSheet
 {
@@ -18,28 +16,12 @@ namespace Twileloop.SpreadSheet.GoogleSheet
     {
         private readonly GoogleSheetOptions config;
         private SheetsService googleSheets;
-        public string SheetName { get; set; }
-        public string SpreadSheetId { get; set; }
+        private string currentSheetName;
+        private string spreadSheetId;
 
         public GoogleSheetDriver(GoogleSheetOptions config)
         {
             this.config = config;
-        }
-
-        private void ValidatePrerequisites()
-        {
-            if (googleSheets is null)
-            {
-                throw new IOException($"Failed to load the GoogleSheet at '{config.SheetsURI}'");
-            }
-            if (SheetName is null)
-            {
-                throw new IOException($"Failed to resolve SheetName");
-            }
-            if (SpreadSheetId is null)
-            {
-                throw new IOException($"Failed to resolve SheetId");
-            }
         }
 
         private string ToColumnName(int column)
@@ -74,7 +56,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             return spreadsheetId;
         }
 
-        public void LoadSheet(string sheetName)
+        public void InitialiseWorkbook()
         {
             GoogleCredential credential;
             using (var stream = new FileStream(config.Credential, FileMode.Open, FileAccess.Read))
@@ -88,371 +70,349 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 HttpClientInitializer = credential,
                 ApplicationName = config.ApplicationName,
             });
-            SheetName = sheetName;
-            SpreadSheetId = GetSpreadsheetIdFromUrl(config.SheetsURI);
+            spreadSheetId = GetSpreadsheetIdFromUrl(config.SheetsURI);
         }
 
-        public string ReadCell(int row, int column)
+        public string ReadCell(Addr addr)
         {
-            string range = $"{SheetName}!{ToColumnName(column)}{row}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
-            string cellValue = response.Values?[0]?.FirstOrDefault()?.ToString();
-            return cellValue;
-        }
-
-        public string ReadCell(string address)
-        {
-            CellAddress cellAddress = new CellAddress(address);
-            int row = cellAddress.Row + 1;
-            int column = cellAddress.Column + 1;
-            return ReadCell(row, column);
-        }
-
-        public string[] ReadColumn(int columnIndex)
-        {
-            string range = $"{SheetName}!{ToColumnName(columnIndex)}:{ToColumnName(columnIndex)}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}:{addr.Row}";
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(spreadSheetId, range).Execute();
+            if (response.Values != null && response.Values.Count > 0 && response.Values[0].Count > 0)
             {
-                string[] columnData = values.Select(row => row.FirstOrDefault()?.ToString()).ToArray();
-                return columnData;
+                return response.Values[0][0]?.ToString();
             }
-            return new string[0];
+            return null;
         }
 
-        public string[] ReadColumn(string address)
+        public string[] ReadColumn(Addr addr)
         {
-            CellAddress cellAddress = new CellAddress(address);
-            int columnIndex = cellAddress.Column + 1;
-            return ReadColumn(columnIndex);
-        }
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}:{ToColumnName(addr.Column)}";
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(spreadSheetId, range).Execute();
 
-        public string[] ReadRow(int rowIndex)
-        {
-            string range = $"{SheetName}!{rowIndex}:{rowIndex}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
+            if (response.Values != null && response.Values.Count > 0)
             {
-                string[] rowData = values[0].Select(cell => cell.ToString()).ToArray();
-                return rowData;
-            }
-            return new string[0];
-        }
-
-        public string[] ReadRow(string address)
-        {
-            CellAddress cellAddress = new CellAddress(address);
-            int rowIndex = cellAddress.Row + 1;
-            return ReadRow(rowIndex);
-        }
-
-        private int GetLastColumnIndex()
-        {
-            string range = $"{SheetName}!1:1";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                return values[0].Count - 1;
-            }
-            return -1;
-        }
-
-        public DataTable ReadSelection(int startRow, int startColumn, int endRow, int endColumn)
-        {
-            string range = $"{SheetName}!{ToColumnName(startColumn)}{startRow}:{ToColumnName(endColumn)}{endRow}";
-            ValueRange response = googleSheets.Spreadsheets.Values.Get(SpreadSheetId, range).Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                DataTable dataTable = new DataTable();
-
-                // Create columns
-                for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                var columnData = new List<string>();
+                foreach (var row in response.Values)
                 {
-                    string columnName = ToColumnName(columnIndex);
-                    dataTable.Columns.Add(columnName);
+                    if (row.Count > 0)
+                    {
+                        columnData.Add(row[0]?.ToString());
+                    }
+                    else
+                    {
+                        columnData.Add(null);
+                    }
                 }
+                return columnData.ToArray();
+            }
 
-                // Add rows
-                for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++)
+            return new string[0];
+        }
+
+        public string[] ReadRow(Addr addr)
+        {
+            string range = $"{currentSheetName}!{addr.Row}:{addr.Row}";
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(spreadSheetId, range).Execute();
+
+            if (response.Values != null && response.Values.Count > 0)
+            {
+                var rowData = new List<string>();
+                foreach (var cell in response.Values[0])
+                {
+                    rowData.Add(cell?.ToString());
+                }
+                return rowData.ToArray();
+            }
+
+            return new string[0];
+        }
+
+        public DataTable ReadSelection(Addr start, Addr end)
+        {
+            
+            if (start.Row <= 0 || start.Column <= 0 || end.Row <= 0 || end.Column <= 0)
+                throw new ArgumentException("Cell index must be > 0");
+
+            string range = $"{currentSheetName}!{ToColumnName(start.Column)}{start.Row}:{ToColumnName(end.Column)}{end.Row}";
+            ValueRange response = googleSheets.Spreadsheets.Values.Get(spreadSheetId, range).Execute();
+            DataTable dataTable = new DataTable();
+
+            // Create columns
+            for (int columnIndex = start.Column; columnIndex <= end.Column; columnIndex++)
+            {
+                string columnName = ToColumnName(columnIndex);
+                dataTable.Columns.Add(columnName);
+            }
+
+            // Add data if there are values
+            if (response.Values != null && response.Values.Count > 0)
+            {
+                for (int rowIndex = 0; rowIndex < response.Values.Count; rowIndex++)
                 {
                     DataRow dataRow = dataTable.NewRow();
-                    IList<object> rowValues = values[rowIndex - startRow];
-                    for (int columnIndex = startColumn; columnIndex <= endColumn; columnIndex++)
+                    var rowValues = response.Values[rowIndex];
+
+                    for (int columnIndex = 0; columnIndex < end.Column - start.Column + 1; columnIndex++)
                     {
-                        int valueIndex = columnIndex - startColumn;
-                        dataRow[columnIndex - startColumn] = valueIndex < rowValues.Count ? rowValues[valueIndex]?.ToString() : string.Empty;
+                        if (columnIndex < rowValues.Count)
+                        {
+                            dataRow[columnIndex] = rowValues[columnIndex]?.ToString();
+                        }
+                        else
+                        {
+                            dataRow[columnIndex] = string.Empty;
+                        }
                     }
+
                     dataTable.Rows.Add(dataRow);
                 }
-
-                return dataTable;
             }
 
-            return new DataTable();
+            return dataTable;
         }
 
-        public DataTable ReadSelection(string startAddress, string endAddress)
+        public void WriteCell(Addr addr, string data, SpreadsheetStyling style = null)
         {
-            CellAddress startCellAddress = new CellAddress(startAddress);
-            CellAddress endCellAddress = new CellAddress(endAddress);
-
-            int startRow = startCellAddress.Row + 1;
-            int startColumn = startCellAddress.Column + 1;
-            int endRow = endCellAddress.Row + 1;
-            int endColumn = endCellAddress.Column + 1;
-
-            return ReadSelection(startRow, startColumn, endRow, endColumn);
-        }
-
-        public void WriteCell(int row, int column, string data)
-        {
-            ValidatePrerequisites();
-            string range = $"{SheetName}!{ToColumnName(column)}{row}";
+            
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}";
             ValueRange valueRange = new ValueRange
             {
                 Values = new List<IList<object>> { new List<object> { data } }
             };
-            SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
+
+            var updateRequest = googleSheets.Spreadsheets.Values.Update(valueRange, spreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
+
+            if (style != null)
+            {
+                ApplyStyling(addr, addr, style);
+            }
         }
 
-        public void WriteCell(string address, string data)
+        public void WriteColumn(Addr addr, string[] data, SpreadsheetStyling style = null)
         {
-            ValidatePrerequisites();
-            CellAddress cellAddress = new CellAddress(address);
-            int row = cellAddress.Row + 1;
-            int column = cellAddress.Column + 1;
-            WriteCell(row, column, data);
-        }
+            
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}:{ToColumnName(addr.Column)}{addr.Row + data.Length - 1}";
 
-        public void WriteColumn(int column, string[] data)
-        {
-            ValidatePrerequisites();
-            int columnIndex = column;
-            string range = $"{SheetName}!{ToColumnName(columnIndex)}:{ToColumnName(columnIndex)}";
-            ValueRange valueRange = new ValueRange
+            var valueRange = new ValueRange
             {
                 Values = new List<IList<object>>()
             };
 
-            foreach (string cellValue in data)
+            foreach (var value in data)
             {
-                valueRange.Values.Add(new List<object> { cellValue });
+                valueRange.Values.Add(new List<object> { value });
             }
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
+            var updateRequest = googleSheets.Spreadsheets.Values.Update(valueRange, spreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
-        }
 
-        private int ParseColumnIndex(string columnName)
-        {
-            const int lettersCount = 26;
-            int columnIndex = 0;
-            int power = 1;
-
-            for (int i = columnName.Length - 1; i >= 0; i--)
+            if (style != null)
             {
-                char letter = columnName[i];
-                int value = letter - 'A' + 1; // Convert letter to corresponding value (A=1, B=2, etc.)
-                columnIndex += value * power;
-                power *= lettersCount;
+                Addr endAddr = (addr.Row + data.Length - 1, addr.Column);
+                ApplyStyling(addr, endAddr, style);
             }
-
-            return columnIndex;
         }
 
-
-
-
-
-
-        public void WriteColumn(string column, string[] data)
+        public void WriteRow(Addr addr, string[] data, SpreadsheetStyling style = null)
         {
-            ValidatePrerequisites();
-            CellAddress cellAddress = new CellAddress(column);
-            WriteColumn(cellAddress.Column + 1, data);
-        }
+            
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}:{ToColumnName(addr.Column + data.Length - 1)}{addr.Row}";
 
-        public void WriteRow(int row, string[] data)
-        {
-            ValidatePrerequisites();
-            string range = $"{SheetName}!A{row}:{ToColumnName(data.Length)}{row}";
-            ValueRange valueRange = new ValueRange
+            var valueRange = new ValueRange
             {
                 Values = new List<IList<object>> { new List<object>(data) }
             };
-            SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
+
+            var updateRequest = googleSheets.Spreadsheets.Values.Update(valueRange, spreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
-        }
 
-        public void WriteRow(string address, string[] data)
-        {
-            ValidatePrerequisites();
-            CellAddress cellAddress = new CellAddress(address);
-            int row = cellAddress.Row + 1;
-            WriteRow(row, data);
-        }
-
-        public void WriteSelection(int startRow, int startColumn, DataTable data)
-        {
-            ValidatePrerequisites();
-            int numRows = startRow + data.Rows.Count; // Calculate the end row based on the number of rows in the DataTable
-            int numCols = startColumn + data.Columns.Count; // Calculate the end column based on the number of columns in the DataTable
-
-            string range = $"{SheetName}!{ToColumnName(startColumn)}{startRow}:{ToColumnName(numCols - 1)}{numRows}";
-            ValueRange valueRange = new ValueRange
+            if (style != null)
             {
-                Values = new List<IList<object>>(data.Rows.Count)
+                Addr endAddr = (addr.Row, addr.Column + data.Length - 1);
+                ApplyStyling(addr, endAddr, style);
+            }
+        }
+
+        public void WriteTable(Addr startAddr, DataTable data, SpreadsheetStyling style = null)
+        {
+            
+            int rowCount = data.Rows.Count;
+            int columnCount = data.Columns.Count;
+
+            string range = $"{currentSheetName}!{ToColumnName(startAddr.Column)}{startAddr.Row}:{ToColumnName(startAddr.Column + columnCount - 1)}{startAddr.Row + rowCount - 1}";
+
+            var valueRange = new ValueRange
+            {
+                Values = new List<IList<object>>()
             };
 
             foreach (DataRow row in data.Rows)
             {
-                List<object> rowData = new List<object>(data.Columns.Count);
-                for (int columnIndex = startColumn; columnIndex < numCols; columnIndex++)
+                var rowValues = new List<object>();
+                foreach (var item in row.ItemArray)
                 {
-                    int dataTableColumnIndex = columnIndex - startColumn;
-                    if (dataTableColumnIndex < row.ItemArray.Length)
-                        rowData.Add(row[dataTableColumnIndex].ToString());
-                    else
-                        rowData.Add(string.Empty);
+                    rowValues.Add(item.ToString());
                 }
-                valueRange.Values.Add(rowData);
+                valueRange.Values.Add(rowValues);
             }
 
-            SpreadsheetsResource.ValuesResource.UpdateRequest updateRequest =
-                googleSheets.Spreadsheets.Values.Update(valueRange, SpreadSheetId, range);
+            var updateRequest = googleSheets.Spreadsheets.Values.Update(valueRange, spreadSheetId, range);
             updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
             updateRequest.Execute();
-        }
 
-        public void WriteSelection(string startAddress, DataTable data)
-        {
-            ValidatePrerequisites();
-            CellReference startReference = new CellReference(startAddress);
-            WriteSelection(startReference.Row + 1, startReference.Col + 1, data);
+            if (style != null)
+            {
+                Addr endAddr = (startAddr.Row + rowCount - 1, startAddr.Column + columnCount - 1);
+                ApplyStyling(startAddr, endAddr, style);
+            }
         }
 
         public void Dispose()
         {
+            // No need to explicitly dispose the SheetsService,
+            // but we should suppress finalization
             GC.SuppressFinalize(this);
-        }
-
-
-        public void CreateSheets(params string[] sheetNames)
-        {
-            ValidatePrerequisites();
-            var requests = new List<Request>();
-
-            foreach (string sheetTitle in sheetNames)
-            {
-                // Create the new sheet request
-                var addSheetRequest = new AddSheetRequest
-                {
-                    Properties = new SheetProperties
-                    {
-                        Title = sheetTitle
-                    }
-                };
-
-                // Add the request to the batch update requests
-                requests.Add(new Request { AddSheet = addSheetRequest });
-            }
-
-            // Create the batch update request
-            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest
-            {
-                Requests = requests
-            };
-
-            // Execute the batch update request
-            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SpreadSheetId);
-            batchUpdateRequest.Execute();
         }
 
         public string[] GetSheets()
         {
-            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
+            
+            var spreadsheet = googleSheets.Spreadsheets.Get(spreadSheetId).Execute();
             var sheetTitles = spreadsheet.Sheets.Select(sheet => sheet.Properties.Title).ToArray();
             return sheetTitles;
         }
 
+        public void OpenSheet(string sheetName)
+        {
+            if (googleSheets == null)
+            {
+                throw new IOException("Workbook has not been initialized");
+            }
+
+            var spreadsheet = googleSheets.Spreadsheets.Get(spreadSheetId).Execute();
+            var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
+
+            if (sheet == null)
+            {
+                throw new IOException($"Sheet '{sheetName}' does not exist");
+            }
+
+            currentSheetName = sheetName;
+        }
+
         public string GetActiveSheet()
         {
-            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
-            var sheets = spreadsheet.Sheets;
-            var activeSheetTitle = sheets[0].Properties.Title;
-            return activeSheetTitle;
+            
+            return currentSheetName;
         }
 
-        public void ApplyFormatting(string startAddress, string endAddress, IFormatting formating)
+        public void CreateSheets(params string[] sheetNames)
         {
-            throw new NotImplementedException();
-        }
+            if (googleSheets == null)
+            {
+                throw new IOException("Workbook has not been initialized");
+            }
 
-        public int? GetActiveSheetId()
-        {
-            var spreadsheet = googleSheets.Spreadsheets.Get(SpreadSheetId).Execute();
-            var sheets = spreadsheet.Sheets;
-
-            return sheets[0].Properties.SheetId;
-        }
-
-
-        public void ApplyFormatting(int startRow, int startColumn, int endRow, int endColumn, Formatting formatting)
-        {
-            var sheetId = GetActiveSheetId();
             var requests = new List<Request>();
 
-            if (formatting.TextFormating is not null)
+            foreach (string sheetName in sheetNames)
             {
+                var sheet = googleSheets.Spreadsheets.Get(spreadSheetId).Execute().Sheets
+                    .FirstOrDefault(s => s.Properties.Title == sheetName);
+
+                if (sheet == null)
+                {
+                    var addSheetRequest = new AddSheetRequest
+                    {
+                        Properties = new SheetProperties
+                        {
+                            Title = sheetName
+                        }
+                    };
+
+                    requests.Add(new Request { AddSheet = addSheetRequest });
+                }
+            }
+
+            if (requests.Count > 0)
+            {
+                var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+                {
+                    Requests = requests
+                };
+
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+            }
+        }
+
+        private int? GetActiveSheetId()
+        {
+            var spreadsheet = googleSheets.Spreadsheets.Get(spreadSheetId).Execute();
+            var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == currentSheetName);
+            return sheet?.Properties.SheetId;
+        }
+
+        public void ApplyStyling(Addr start, Addr end, SpreadsheetStyling styling)
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            var requests = new List<Request>();
+
+            // Apply text formatting if present
+            if (styling.TextFormating != null)
+            {
+                var textFormat = new TextFormat
+                {
+                    Bold = styling.TextFormating.Bold,
+                    Italic = styling.TextFormating.Italic,
+                    Underline = styling.TextFormating.Underline,
+                    FontSize = styling.TextFormating.Size,
+                    FontFamily = styling.TextFormating.Font
+                };
+
+                if (styling.TextFormating.FontColor != null)
+                {
+                    textFormat.ForegroundColor = new Color
+                    {
+                        Red = styling.TextFormating.FontColor.R / 255f,
+                        Green = styling.TextFormating.FontColor.G / 255f,
+                        Blue = styling.TextFormating.FontColor.B / 255f
+                    };
+                }
+
+                string horizontalAlignment = ConvertToGoogleHorizontalAlignment(styling.TextFormating.HorizontalAlignment);
+                string verticalAlignment = ConvertToGoogleVerticalAlignment(styling.TextFormating.VerticalAlignment);
+
                 var cellFormat = new CellFormat
                 {
-                    TextFormat = new TextFormat
-                    {
-                        Bold = formatting.TextFormating.Bold,
-                        Italic = formatting.TextFormating.Italic,
-                        Underline = formatting.TextFormating.Underline,
-                        FontSize = formatting.TextFormating.Size,
-                        ForegroundColor = new Color
-                        {
-                            Red = formatting.TextFormating.Color.R / 255f,
-                            Green = formatting.TextFormating.Color.G / 255f,
-                            Blue = formatting.TextFormating.Color.B / 255f
-                        },
-                        FontFamily = formatting.TextFormating.Font
-                    },
-                    HorizontalAlignment = formatting.TextFormating.HorizontalAlignment.ToString().ToUpper(),
-                    VerticalAlignment = formatting.TextFormating.VerticalAlignment.ToString().ToUpper(),
+                    TextFormat = textFormat,
+                    HorizontalAlignment = horizontalAlignment,
+                    VerticalAlignment = verticalAlignment
                 };
 
                 var repeatCellRequest = new RepeatCellRequest
                 {
                     Range = new GridRange
                     {
-                        SheetId = sheetId,
-                        StartRowIndex = startRow - 1,
-                        EndRowIndex = endRow,
-                        StartColumnIndex = startColumn - 1,
-                        EndColumnIndex = endColumn
+                        SheetId = sheetId.Value,
+                        StartRowIndex = start.Row - 1,
+                        EndRowIndex = end.Row,
+                        StartColumnIndex = start.Column - 1,
+                        EndColumnIndex = end.Column
                     },
                     Cell = new CellData
                     {
-                        UserEnteredFormat = new CellFormat
-                        {
-                            TextFormat = cellFormat.TextFormat,
-                            HorizontalAlignment = cellFormat.HorizontalAlignment,
-                            VerticalAlignment = cellFormat.VerticalAlignment
-                        }
+                        UserEnteredFormat = cellFormat
                     },
                     Fields = "userEnteredFormat.textFormat,userEnteredFormat.horizontalAlignment,userEnteredFormat.verticalAlignment"
                 };
@@ -460,54 +420,326 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 requests.Add(new Request { RepeatCell = repeatCellRequest });
             }
 
-            // Apply cell formatting
-            if (formatting.CellFormating is not null)
+            // Apply cell formatting if present
+            if (styling.CellFormating != null)
             {
                 var backgroundColor = new Color
                 {
-                    Red = formatting.CellFormating.BackgroundColor.R / 255f,
-                    Green = formatting.CellFormating.BackgroundColor.G / 255f,
-                    Blue = formatting.CellFormating.BackgroundColor.B / 255f
+                    Red = styling.CellFormating.BackgroundColor.R / 255f,
+                    Green = styling.CellFormating.BackgroundColor.G / 255f,
+                    Blue = styling.CellFormating.BackgroundColor.B / 255f
                 };
 
                 var cellFormat = new CellFormat
                 {
                     BackgroundColor = backgroundColor
-                    // Set additional cell formatting properties
                 };
 
                 var repeatCellRequest = new RepeatCellRequest
                 {
                     Range = new GridRange
                     {
-                        SheetId = sheetId,
-                        StartRowIndex = startRow - 1,
-                        EndRowIndex = endRow,
-                        StartColumnIndex = startColumn - 1,
-                        EndColumnIndex = endColumn
+                        SheetId = sheetId.Value,
+                        StartRowIndex = start.Row - 1,
+                        EndRowIndex = end.Row,
+                        StartColumnIndex = start.Column - 1,
+                        EndColumnIndex = end.Column
                     },
                     Cell = new CellData
                     {
-                        UserEnteredFormat = new CellFormat
-                        {
-                            BackgroundColor = cellFormat.BackgroundColor
-                            // Set additional cell formatting properties
-                        }
+                        UserEnteredFormat = cellFormat
                     },
                     Fields = "userEnteredFormat.backgroundColor"
                 };
+
                 requests.Add(new Request { RepeatCell = repeatCellRequest });
             }
 
-            // Create the batch update request
-            var batchUpdateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest
+            if (requests.Count > 0)
+            {
+                var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+                {
+                    Requests = requests
+                };
+
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+            }
+        }
+
+        private string ConvertToGoogleHorizontalAlignment(HorizontalTxtAlignment alignment)
+        {
+            switch (alignment)
+            {
+                case HorizontalTxtAlignment.LEFT:
+                    return "LEFT";
+                case HorizontalTxtAlignment.CENTER:
+                    return "CENTER";
+                case HorizontalTxtAlignment.RIGHT:
+                    return "RIGHT";
+                default:
+                    return "LEFT";
+            }
+        }
+
+        private string ConvertToGoogleVerticalAlignment(VerticalTxtAlignment alignment)
+        {
+            switch (alignment)
+            {
+                case VerticalTxtAlignment.TOP:
+                    return "TOP";
+                case VerticalTxtAlignment.MIDDLE:
+                    return "MIDDLE";
+                case VerticalTxtAlignment.BOTTOM:
+                    return "BOTTOM";
+                default:
+                    return "MIDDLE";
+            }
+        }
+
+        public void ApplyBorder(Addr start, Addr end, BorderStyling styling)
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            var requests = new List<Request>();
+
+            // Convert border color to Google's color format
+            var borderColor = new Color
+            {
+                Red = styling.BorderColor.R / 255f,
+                Green = styling.BorderColor.G / 255f,
+                Blue = styling.BorderColor.B / 255f
+            };
+
+            // Convert border style to Google's format
+            string style = ConvertToGoogleBorderStyle(styling.BorderType, styling.Thickness);
+
+            var updateBordersRequest = new UpdateBordersRequest
+            {
+                Range = new GridRange
+                {
+                    SheetId = sheetId.Value,
+                    StartRowIndex = start.Row - 1,
+                    EndRowIndex = end.Row,
+                    StartColumnIndex = start.Column - 1,
+                    EndColumnIndex = end.Column
+                }
+            };
+
+            if (styling.TopBorder)
+            {
+                updateBordersRequest.Top = new Border
+                {
+                    Style = style,
+                    Color = borderColor
+                };
+            }
+
+            if (styling.BottomBorder)
+            {
+                updateBordersRequest.Bottom = new Border
+                {
+                    Style = style,
+                    Color = borderColor
+                };
+            }
+
+            if (styling.LeftBorder)
+            {
+                updateBordersRequest.Left = new Border
+                {
+                    Style = style,
+                    Color = borderColor
+                };
+            }
+
+            if (styling.RightBorder)
+            {
+                updateBordersRequest.Right = new Border
+                {
+                    Style = style,
+                    Color = borderColor
+                };
+            }
+
+            requests.Add(new Request { UpdateBorders = updateBordersRequest });
+
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
             {
                 Requests = requests
             };
 
-            // Execute the batch update request
-            var batchUpdateRequest = googleSheets.Spreadsheets.BatchUpdate(batchUpdateSpreadsheetRequest, SpreadSheetId);
-            batchUpdateRequest.Execute();
+            googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+        }
+
+        private string ConvertToGoogleBorderStyle(BorderType borderType, BorderThickness thickness)
+        {
+            switch (borderType)
+            {
+                case BorderType.SOLID:
+                    switch (thickness)
+                    {
+                        case BorderThickness.Thin:
+                            return "SOLID";
+                        case BorderThickness.Medium:
+                            return "SOLID_MEDIUM";
+                        case BorderThickness.Thick:
+                            return "SOLID_THICK";
+                        case BorderThickness.DoubleLined:
+                            return "DOUBLE";
+                        default:
+                            return "SOLID";
+                    }
+                case BorderType.DOTTED:
+                    return "DOTTED";
+                case BorderType.DASHED:
+                    return "DASHED";
+                default:
+                    return "SOLID";
+            }
+        }
+
+        public void MergeCells(Addr start, Addr end)
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            var mergeCellsRequest = new MergeCellsRequest
+            {
+                Range = new GridRange
+                {
+                    SheetId = sheetId.Value,
+                    StartRowIndex = start.Row - 1,
+                    EndRowIndex = end.Row,
+                    StartColumnIndex = start.Column - 1,
+                    EndColumnIndex = end.Column
+                },
+                MergeType = "MERGE_ALL"
+            };
+
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { new Request { MergeCells = mergeCellsRequest } }
+            };
+
+            googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+        }
+
+        public void ResizeColumn(Addr addr, int width)
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            var updateDimensionPropertiesRequest = new UpdateDimensionPropertiesRequest
+            {
+                Range = new DimensionRange
+                {
+                    SheetId = sheetId.Value,
+                    Dimension = "COLUMNS",
+                    StartIndex = addr.Column - 1,
+                    EndIndex = addr.Column
+                },
+                Properties = new DimensionProperties
+                {
+                    PixelSize = width * 4  // Approximate conversion from Excel's width units to pixels
+                },
+                Fields = "pixelSize"
+            };
+
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } }
+            };
+
+            googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+        }
+
+        public void ResizeRow(Addr addr, float height)
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            var updateDimensionPropertiesRequest = new UpdateDimensionPropertiesRequest
+            {
+                Range = new DimensionRange
+                {
+                    SheetId = sheetId.Value,
+                    Dimension = "ROWS",
+                    StartIndex = addr.Row - 1,
+                    EndIndex = addr.Row
+                },
+                Properties = new DimensionProperties
+                {
+                    PixelSize = (int)(height * 4)  // Approximate conversion from Excel's points to pixels
+                },
+                Fields = "pixelSize"
+            };
+
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } }
+            };
+
+            googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+        }
+
+        public void AutoFitAllColumns()
+        {
+            
+            int? sheetId = GetActiveSheetId();
+
+            if (!sheetId.HasValue)
+            {
+                return;
+            }
+
+            // Google Sheets handles column auto-sizing automatically,
+            // but we can send a request to refresh the sheet which may trigger auto-sizing
+            var refreshRequest = new RefreshDataSourceRequest
+            {
+                DataSourceId = spreadSheetId
+            };
+
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { new Request { RefreshDataSource = refreshRequest } }
+            };
+
+            try
+            {
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+            }
+            catch
+            {
+                // RefreshDataSource might not be available for all sheets, so we'll ignore exceptions
+            }
+        }
+
+        public void SaveWorkbook()
+        {
+            // Google Sheets saves automatically, so no explicit save action is needed
+            // But we can implement auto-fitting columns here
+            AutoFitAllColumns();
         }
     }
 }

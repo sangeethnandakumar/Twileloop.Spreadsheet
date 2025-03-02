@@ -26,8 +26,8 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Google.Apis.Auth" Version="1.66.0" />
-		<PackageReference Include="Google.Apis.Drive.v3" Version="1.66.0.3309" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.69.0.3699" />
 	</ItemGroup>
 
 </Project>

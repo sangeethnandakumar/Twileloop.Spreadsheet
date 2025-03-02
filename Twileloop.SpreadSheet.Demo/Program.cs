@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
-using Twileloop.SpreadSheet.Constructs;
+﻿using System.Data;
+using System.Diagnostics;
+using System.Drawing;
 using Twileloop.SpreadSheet.Factory;
-using Twileloop.SpreadSheet.Formating;
 using Twileloop.SpreadSheet.GoogleSheet;
 using Twileloop.SpreadSheet.MicrosoftExcel;
-using Twileloop.Storage.GoogleDrive;
+using Twileloop.SpreadSheet.Styling;
 
 namespace Twileloop.SpreadSheet.Demo
 {
@@ -12,142 +12,246 @@ namespace Twileloop.SpreadSheet.Demo
     {
         public static void Main(string[] args)
         {
-            GoogleDriveDemo().Wait();
+            string filePath = @"Demo.xlsx";
+            File.Delete(filePath);
+
+            //GoogleDriveDemo().Wait();
+
+            // ----| MICROSOFT EXCEL |------------------------------------------------------------------
+
+            SpreadSheetAccessor excelAccessor;
+            SpreadsheetStyling headingStyle, myStyle;
+            DataTable table;
+            //WorkingWithExcel(out excelAccessor, out headingStyle, out myStyle, out table);
+
+            // ----| GOOGLE SHEET |------------------------------------------------------------------
+
+            //Microsoft Excel
+
+            var sheetsURI = new Uri("https://docs.google.com/spreadsheets/d/1YWqL4_jmGhtpj--ZBLRe598w7IXDCvzL0UWHU_wZMqU/edit?gid=0#gid=0");
+            var sheetName = "MySheet";
+            var credential = @"secrets.json";
+
+            var googleSheet = new GoogleSheetDriver(new GoogleSheetOptions(sheetsURI, sheetName, credential));
+            var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheet);
+
+            //Creates new or loads an existsing workbook
+            googleSheetAccessor.Controller.InitialiseWorkbook();
+
+            //Create new sheets
+            googleSheetAccessor.Controller.CreateSheets("Sheet 1", "Sheet 2");
+
+            //Open 1st sheet
+            googleSheetAccessor.Controller.OpenSheet("Sheet 1");
+
+            //Write to Cell
+            googleSheetAccessor.Writer.WriteCell("A1", "Write");
+            googleSheetAccessor.Writer.WriteCell((1, 2), "Individual"); //Supports row, col numbers also
+            googleSheetAccessor.Writer.WriteCell(("C1"), "Cells");
+
+            //Write as Rows
+            googleSheetAccessor.Writer.WriteRow("A3", ["Col 1", "Col 2", "Col 3", "Col 4"]);
+            googleSheetAccessor.Writer.WriteRow("A4", ["Col 1", "Col 2", "Col 3", "Col 4"]);
+            googleSheetAccessor.Writer.WriteRow("A5", ["Col 1", "Col 2", "Col 3", "Col 4"]);
 
 
-            //Initialize your spreadsheet drivers
-            var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
+            //Write as Cols
+            googleSheetAccessor.Writer.WriteColumn("A7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            googleSheetAccessor.Writer.WriteColumn("B7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            googleSheetAccessor.Writer.WriteColumn("C7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            googleSheetAccessor.Writer.WriteColumn("D7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+
+            //Create a style
+            var headingStyle1 = new StyleBuilder()
+                .Bold()
+                .WithFontSize(18)
+                .WithFont("Arial")
+                .WithTextColor(Color.Blue)
+                .WithHorizontalAlignment(HorizontalTxtAlignment.CENTER)
+                .WithVerticalAlignment(VerticalTxtAlignment.MIDDLE)
+                .WithBackgroundColor(Color.LightBlue)
+                .Build();
+
+            var myStyle1 = new StyleBuilder()
+                .Italic()
+                .Underline()
+                .WithTextColor(Color.White)
+                .WithBackgroundColor(Color.Green)
+                .Build();
+
+            //Table
+            var table1 = new DataTable();
+            table1.Columns.Add("ID");
+            table1.Columns.Add("Name");
+            table1.Columns.Add("Age");
+            table1.Columns.Add("City");
+            table1.Columns.Add("Salary");
+            table1.Rows.Add(1, "John Doe", 28, "New York", 55000);
+            table1.Rows.Add(2, "Alice Smith", 34, "Los Angeles", 62000);
+            table1.Rows.Add(3, "Bob Johnson", 41, "Chicago", 72000);
+            table1.Rows.Add(4, "Emily Davis", 25, "Houston", 48000);
+            table1.Rows.Add(5, "Michael Brown", 37, "Phoenix", 67000);
+            table1.Rows.Add(6, "Sarah Wilson", 30, "Philadelphia", 59000);
+            table1.Rows.Add(7, "David Lee", 45, "San Antonio", 75000);
+            table1.Rows.Add(8, "Laura White", 27, "San Diego", 51000);
+            table1.Rows.Add(9, "James Green", 33, "Dallas", 60000);
+            table1.Rows.Add(10, "Emma Harris", 29, "San Francisco", 68000);
+
+            googleSheetAccessor.Writer.WriteTable("A12", table1, myStyle1);
+
+            googleSheetAccessor.Writer.ApplyBorder("A12", "E21", new BorderStyling
             {
-                FileLocation = @"C:\Users\Sangeeth Nandakumar\OneDrive\Desktop\Demo.xlsx"
+                TopBorder = true,
+                LeftBorder = true,
+                RightBorder = true,
+                BottomBorder = true,
+                BorderType = BorderType.SOLID,
+                BorderColor = Color.OrangeRed,
+                Thickness = BorderThickness.Thick
             });
 
-            var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
+            //More borders
+            googleSheetAccessor.Writer.ApplyBorder("A3", "D5", new BorderStyling
             {
-                SheetsURI = new Uri("https://docs.google.com/spreadsheets/d/1BZTxOnwBMwcPXSJp4etagUsbkwr7N8K6T5g98V9wlvA/edit#gid=1354136408"),
-                Credential = @"secrets.json"
+                TopBorder = true,
+                LeftBorder = true,
+                RightBorder = true,
+                BottomBorder = true,
+                BorderType = BorderType.DASHED,
+                BorderColor = Color.OrangeRed,
+                Thickness = BorderThickness.DoubleLined
             });
 
+            //Apply selection styles
+            googleSheetAccessor.Writer.ApplyStyling("A1", "C1", headingStyle1);
 
-            //Use that driver to build a spreadsheet accessor
-            var excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
-            var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheetsDriver);
+            //Merge few cells
+            googleSheetAccessor.Writer.MergeCells("A2", "E2");
+            googleSheetAccessor.Writer.WriteCell("A2", "This is just a very very long description as an example", new StyleBuilder()
+                .Bold()
+                .Italic()
+                .Underline()
+                .Build());
 
-            using (excelAccessor)
-            {
-                using (googleSheetAccessor)
-                {
-                    excelAccessor.Controller.LoadSheet("Major");
-                    googleSheetAccessor.Controller.LoadSheet("Major");
+            //Resize a specific column
+            googleSheetAccessor.Writer.ResizeRow("A1", 50);
+            googleSheetAccessor.Writer.ResizeColumn("D1", 50);
 
-
-                    var titleFormat = new Formatting
-                    {
-                        //Text formatting
-                        TextFormating = new TextFormating
-                        {
-                            Bold = false,
-                            Italic = true,
-                            Underline = false,
-                            Size = 15,
-                            HorizontalAlignment = HorizontalAllignment.RIGHT,
-                            VerticalAlignment = VerticalAllignment.BOTTOM,
-                            Font = "Impact",
-                            Color = System.Drawing.Color.White,
-                        },
-                        //Cell formatting
-                        CellFormating = new CellFormating
-                        {
-                            BackgroundColor = System.Drawing.Color.IndianRed
-                        },
-                        //Border formatting
-                        BorderFormating = new BorderFormating
-                        {
-                            TopBorder = true,
-                            LeftBorder = true,
-                            RightBorder = true,
-                            BottomBorder = true,
-                            BorderType = BorderType.SOLID,
-                            Thickness = 5
-                        }
-                    };
-
-
-
-                    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
-                    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
-
-
-
-                    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
-                    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
-
-                    var allExcelSheets = excelAccessor.Controller.GetSheets();
-                    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
-
-                    excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
-                    googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
-                }
-            }
-
-            string filePath = @"C:\Users\Sangeeth Nandakumar\OneDrive\Desktop\Demo.xlsx";
+            //Save file
+            googleSheetAccessor.Controller.SaveWorkbook();
 
             Process.Start(@"C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE", $"\"{filePath}\"");
-
         }
 
-        private static async Task GoogleDriveDemo()
+        private static void WorkingWithExcel(out SpreadSheetAccessor excelAccessor, out SpreadsheetStyling headingStyle, out SpreadsheetStyling myStyle, out DataTable table)
         {
-            // Initialize Google Drive service
-            var googleDriveService = new GoogleDriveService("drive.json", "BestSellerScrapper");
+            //Microsoft Excel
+            var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions(@"Demo.xlsx"));
+            excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
 
-            // List all files and directories
-            var items = googleDriveService.GetAllFilesAndDirectoriesAsync().Result.ToList();
-            foreach (var item in items)
+            //Creates new or loads an existsing workbook
+            excelAccessor.Controller.InitialiseWorkbook();
+
+            //Create new sheets
+            excelAccessor.Controller.CreateSheets("Sheet 1", "Sheet 2");
+
+            //Open 1st sheet
+            excelAccessor.Controller.OpenSheet("Sheet 1");
+
+            //Write to Cell
+            excelAccessor.Writer.WriteCell("A1", "Write");
+            excelAccessor.Writer.WriteCell((1, 2), "Individual"); //Supports row, col numbers also
+            excelAccessor.Writer.WriteCell(("C1"), "Cells");
+
+            //Write as Rows
+            excelAccessor.Writer.WriteRow("A3", ["Col 1", "Col 2", "Col 3", "Col 4"]);
+            excelAccessor.Writer.WriteRow("A4", ["Col 1", "Col 2", "Col 3", "Col 4"]);
+            excelAccessor.Writer.WriteRow("A5", ["Col 1", "Col 2", "Col 3", "Col 4"]);
+
+
+            //Write as Cols
+            excelAccessor.Writer.WriteColumn("A7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            excelAccessor.Writer.WriteColumn("B7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            excelAccessor.Writer.WriteColumn("C7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+            excelAccessor.Writer.WriteColumn("D7", ["Row 1", "Row 2", "Row 3", "Row 4"]);
+
+            //Create a style
+            headingStyle = new StyleBuilder()
+                .Bold()
+                .WithFontSize(18)
+                .WithFont("Arial")
+                .WithTextColor(Color.Blue)
+                .WithHorizontalAlignment(HorizontalTxtAlignment.CENTER)
+                .WithVerticalAlignment(VerticalTxtAlignment.MIDDLE)
+                .WithBackgroundColor(Color.LightBlue)
+                .Build();
+            myStyle = new StyleBuilder()
+                .Italic()
+                .Underline()
+                .WithTextColor(Color.White)
+                .WithBackgroundColor(Color.Green)
+                .Build();
+
+            //Table
+            table = new DataTable();
+            table.Columns.Add("ID");
+            table.Columns.Add("Name");
+            table.Columns.Add("Age");
+            table.Columns.Add("City");
+            table.Columns.Add("Salary");
+            table.Rows.Add(1, "John Doe", 28, "New York", 55000);
+            table.Rows.Add(2, "Alice Smith", 34, "Los Angeles", 62000);
+            table.Rows.Add(3, "Bob Johnson", 41, "Chicago", 72000);
+            table.Rows.Add(4, "Emily Davis", 25, "Houston", 48000);
+            table.Rows.Add(5, "Michael Brown", 37, "Phoenix", 67000);
+            table.Rows.Add(6, "Sarah Wilson", 30, "Philadelphia", 59000);
+            table.Rows.Add(7, "David Lee", 45, "San Antonio", 75000);
+            table.Rows.Add(8, "Laura White", 27, "San Diego", 51000);
+            table.Rows.Add(9, "James Green", 33, "Dallas", 60000);
+            table.Rows.Add(10, "Emma Harris", 29, "San Francisco", 68000);
+
+            excelAccessor.Writer.WriteTable("A12", table, myStyle);
+
+            excelAccessor.Writer.ApplyBorder("A12", "E21", new BorderStyling
             {
-                Console.WriteLine($"{item.Name} ({item.Id})");
-            }
-
-            //Make them listed for my account in GoogleDrive
-            //foreach (var item in items)
-            //{
-            //    Console.WriteLine("Sharing with another user...");
-            //    //await googleDriveService.ShareFileWithSpecificUsers(item.Id, new List<string> { "sangeethnandakumarofficial@gmail.com" });
-
-            //    Console.WriteLine("Generating a sharable link");
-            //    var link = await googleDriveService.GenerateShareableLink(item.Id);
-            //}
-
-            //// Create a new directory
-            //await googleDriveService.CreateDirectoryAsync("NewDirectory");
-
-            // Upload a file
-            await googleDriveService.UploadFileAsync("demofile.pdf", "application/pdf", progress: (total, downloaded) =>
-            {
-                decimal percentage = Math.Round((decimal)downloaded/(decimal)total * 100,1);
-                Console.WriteLine($"[{percentage}%] Uploading {downloaded} of {total} bytes...");
-            }, chunkSizeInMB: 1);
-
-            items = googleDriveService.GetAllFilesAndDirectoriesAsync().Result.ToList();
-
-            // Rename the file
-            var file = items.First(i => i.Name == "demofile.pdf");
-            await googleDriveService.RenameFileAsync(file.Id, "renamed_demofile.jpg");
-
-            // Move the file
-            var directory = items.First(i => i.Name == "NewDirectory");
-            await googleDriveService.MoveFileAsync(file.Id, directory.Id);
-
-            // Copy the file
-            await googleDriveService.CopyFileAsync(file.Id, directory.Id);
-
-            // Download the file
-            await googleDriveService.DownloadFileAsync(file.Id, "renamed_demofile.txt", progress: (total, downloaded) =>
-            {
-                Console.WriteLine($"Downloaded {downloaded} of {total} bytes");
+                TopBorder = true,
+                LeftBorder = true,
+                RightBorder = true,
+                BottomBorder = true,
+                BorderType = BorderType.SOLID,
+                BorderColor = Color.OrangeRed,
+                Thickness = BorderThickness.Thick
             });
 
-            // Delete the file
-            await googleDriveService.DeleteFileAsync(file.Id);
+            //More borders
+            excelAccessor.Writer.ApplyBorder("A3", "D5", new BorderStyling
+            {
+                TopBorder = true,
+                LeftBorder = true,
+                RightBorder = true,
+                BottomBorder = true,
+                BorderType = BorderType.DASHED,
+                BorderColor = Color.OrangeRed,
+                Thickness = BorderThickness.DoubleLined
+            });
+
+            //Apply selection styles
+            excelAccessor.Writer.ApplyStyling("A1", "C1", headingStyle);
+
+            //Merge few cells
+            excelAccessor.Writer.MergeCells("A2", "E2");
+            excelAccessor.Writer.WriteCell("A2", "This is just a very very long description as an example", new StyleBuilder()
+                .Bold()
+                .Italic()
+                .Underline()
+                .Build());
+
+            //Resize a specific column
+            excelAccessor.Writer.ResizeRow("A1", 50);
+            excelAccessor.Writer.ResizeColumn("D1", 50);
+
+            //Save file
+            excelAccessor.Controller.SaveWorkbook();
         }
     }
 }
