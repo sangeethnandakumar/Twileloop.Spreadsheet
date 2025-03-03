@@ -65,11 +65,11 @@ var googleSheet = new GoogleSheetDriver(new GoogleSheetOptions(
 
 # For GoogleSheetDriver, Setting `bulkUpdate` to `true`, Makes Writes To GoogleSheets Faster, But This Is Now Expirimental
 
-## bulkUpdate: false 
+### bulkUpdate: false 
+![image](https://raw.githubusercontent.com/sangeethnandakumar/Twileloop.Spreadsheet/refs/heads/master/doc/PerfNonBulk.webp)
 
-
-## bulkUpdate: true
-
+### bulkUpdate: true
+![image](https://raw.githubusercontent.com/sangeethnandakumar/Twileloop.Spreadsheet/refs/heads/master/doc/PerfBulk.webp)
 ---
 
 
