@@ -1,140 +1,15 @@
-﻿using NPOI.SS.UserModel;
+﻿using Google.Apis.Sheets.v4.Data;
+using NPOI.SS.UserModel;
 using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.IO;
-using Twileloop.SpreadSheet.Factory.Base;
 using Twileloop.SpreadSheet.Styling;
 
 namespace Twileloop.SpreadSheet.MicrosoftExcel
 {
-    public class MicrosoftExcelDriver : ISpreadSheetDriver
+    public partial class MicrosoftExcelDriver
     {
-        private readonly MicrosoftExcelOptions config;
-        private IWorkbook workbook;
-        private ISheet sheet;
-
-        public string DriverName => "MicrosoftExcel";
-
-        public MicrosoftExcelDriver(MicrosoftExcelOptions config)
-        {
-            this.config = config;
-        }
-
-        public string ReadCell(Addr addr)
-        {
-            IRow excelRow = sheet.GetRow(addr.Row - 1);
-            if (excelRow is not null)
-            {
-                ICell cell = excelRow.GetCell(addr.Column - 1);
-                return cell?.ToString();
-            }
-            return null;
-        }
-
-        public string[] ReadColumn(Addr addr)
-        {
-            var columnData = new List<string>();
-            for (int rowIndex = 0; ; rowIndex++)
-            {
-                IRow row = sheet.GetRow(rowIndex);
-                if (row == null)
-                    break;
-                ICell cell = row.GetCell(addr.Column - 1); // Adjust column index
-                if (cell != null)
-                    columnData.Add(cell.ToString());
-            }
-            return columnData.ToArray();
-        }
-
-        public string[] ReadRow(Addr addr)
-        {
-            List<string> rowData = new List<string>();
-            IRow row = sheet.GetRow(addr.Row - 1); // Adjust row index
-            if (row != null)
-            {
-                int cellIndex = 0;
-                while (true)
-                {
-                    ICell cell = row.GetCell(cellIndex);
-                    if (cell == null)
-                        break;
-
-                    rowData.Add(cell.ToString());
-                    cellIndex++;
-                }
-            }
-            return rowData.ToArray();
-        }
-
-        public DataTable ReadSelection(Addr start, Addr end)
-        {
-            if (start.Row <= 0 || start.Column <= 0 || end.Row <= 0 || end.Column <= 0) // Update the condition for index check
-                throw new ArgumentException("Cell index must be > 0");
-
-            DataTable dataTable = new DataTable();
-            for (int columnIndex = start.Column; columnIndex <= end.Column; columnIndex++)
-            {
-                string columnName = ToColumnName(columnIndex);
-                dataTable.Columns.Add(columnName);
-            }
-
-            for (int rowIndex = start.Row; rowIndex <= end.Row; rowIndex++)
-            {
-                IRow row = sheet.GetRow(rowIndex - 1); // Adjust row index
-                if (row != null)
-                {
-                    DataRow dataRow = dataTable.NewRow();
-                    for (int columnIndex = start.Column; columnIndex <= end.Column; columnIndex++)
-                    {
-                        ICell cell = row.GetCell(columnIndex - 1); // Adjust column index
-                        if (cell != null)
-                        {
-                            int dataTableColumnIndex = columnIndex - start.Column; // Adjust column index
-                            if (dataTableColumnIndex >= dataTable.Columns.Count)
-                            {
-                                DataColumn dataColumn = new DataColumn();
-                                dataTable.Columns.Add(dataColumn);
-                            }
-                            dataRow[dataTableColumnIndex] = cell.ToString();
-                        }
-                    }
-                    dataTable.Rows.Add(dataRow);
-                }
-            }
-            return dataTable;
-        }
-
-        private string ToColumnName(int column)
-        {
-            const int lettersCount = 26;
-            string columnName = "";
-            while (column > 0)
-            {
-                column--;
-                columnName = Convert.ToChar('A' + column % lettersCount) + columnName;
-                column /= lettersCount;
-            }
-            return columnName;
-        }
-
-        public void InitialiseWorkbook()
-        {
-            if (File.Exists(config.FileLocation))
-            {
-                using (FileStream fileStream = new FileStream(config.FileLocation, FileMode.Open, FileAccess.ReadWrite))
-                {
-                    workbook = new XSSFWorkbook(fileStream);
-                }
-            }
-            else
-            {
-                workbook = new XSSFWorkbook();
-            }
-        }
-
         public void WriteCell(Addr addr, string data, SpreadsheetStyling style = null)
         {
             IRow excelRow = sheet.GetRow(addr.Row);
@@ -206,44 +81,42 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             }
         }
 
-        public void Dispose()
+        public void ApplyStyling(Addr start, Addr end, SpreadsheetStyling styling)
         {
-            var xfile = new FileStream(config.FileLocation, FileMode.Create, FileAccess.Write);
-            workbook.Write(xfile, false);
-            workbook.Close();
-            xfile.Close();
-            GC.SuppressFinalize(this);
-        }
+            XSSFCellStyle cellStyle = (XSSFCellStyle)workbook.CreateCellStyle();
+            XSSFFont font = (XSSFFont)workbook.CreateFont();
 
-        public string[] GetSheets()
-        {
-            var sheetTitles = new string[workbook.NumberOfSheets];
-            for (int i = 0; i < workbook.NumberOfSheets; i++)
+            // Apply text formatting if present
+            if (styling.TextFormating is not null)
             {
-                sheetTitles[i] = workbook.GetSheetName(i);
+                font.IsBold = styling.TextFormating.Bold;
+                font.IsItalic = styling.TextFormating.Italic;
+                font.Underline = styling.TextFormating.Underline ? FontUnderlineType.Single : FontUnderlineType.None;
+                font.FontHeightInPoints = styling.TextFormating.Size;
+                font.FontName = styling.TextFormating.Font;
+                font.SetColor(GetXSSFColor(styling.TextFormating.FontColor));
+
+                cellStyle.SetFont(font);
+                cellStyle.Alignment = ConvertToNPOIHorizontalAlignment(styling.TextFormating.HorizontalAlignment);
+                cellStyle.VerticalAlignment = ConvertToNPOIVerticalAlignment(styling.TextFormating.VerticalAlignment);
             }
-            return sheetTitles;
-        }
 
-        public void OpenSheet(string sheetName)
-        {
-            sheet = workbook.GetSheet(sheetName);
-        }
-
-        public string GetActiveSheet()
-        {
-            var activeSheetIndex = workbook.ActiveSheetIndex;
-            var activeSheetTitle = workbook.GetSheetName(activeSheetIndex);
-            return activeSheetTitle;
-        }
-
-        public void CreateSheets(params string[] sheetNames)
-        {
-            foreach (string sheetName in sheetNames)
+            // Apply cell formatting if present
+            if (styling.CellFormating is not null)
             {
-                if (workbook.GetSheetIndex(sheetName) == -1)
+                cellStyle.FillPattern = FillPattern.SolidForeground;
+                cellStyle.SetFillForegroundColor(GetXSSFColor(styling.CellFormating.BackgroundColor));
+            }
+
+            // Apply the final style to all selected cells
+            for (int rowIndex = start.Row; rowIndex <= end.Row; rowIndex++)
+            {
+                var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
+
+                for (int columnIndex = start.Column; columnIndex <= end.Column; columnIndex++)
                 {
-                    workbook.CreateSheet(sheetName);
+                    var cell = (XSSFCell)(row.GetCell(columnIndex) ?? row.CreateCell(columnIndex));
+                    cell.CellStyle = cellStyle;
                 }
             }
         }
@@ -331,48 +204,6 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
             };
         }
 
-        public void ApplyStyling(Addr start, Addr end, SpreadsheetStyling styling)
-        {
-            XSSFCellStyle cellStyle = (XSSFCellStyle)workbook.CreateCellStyle();
-            XSSFFont font = (XSSFFont)workbook.CreateFont();
-
-            // Apply text formatting if present
-            if (styling.TextFormating is not null)
-            {
-                font.IsBold = styling.TextFormating.Bold;
-                font.IsItalic = styling.TextFormating.Italic;
-                font.Underline = styling.TextFormating.Underline ? FontUnderlineType.Single : FontUnderlineType.None;
-                font.FontHeightInPoints = styling.TextFormating.Size;
-                font.FontName = styling.TextFormating.Font;
-                font.SetColor(GetXSSFColor(styling.TextFormating.FontColor));
-
-                cellStyle.SetFont(font);
-                cellStyle.Alignment = ConvertToNPOIHorizontalAlignment(styling.TextFormating.HorizontalAlignment);
-                cellStyle.VerticalAlignment = ConvertToNPOIVerticalAlignment(styling.TextFormating.VerticalAlignment);
-            }
-
-            // Apply cell formatting if present
-            if (styling.CellFormating is not null)
-            {
-                cellStyle.FillPattern = FillPattern.SolidForeground;
-                cellStyle.SetFillForegroundColor(GetXSSFColor(styling.CellFormating.BackgroundColor));
-            }
-
-            // Apply the final style to all selected cells
-            for (int rowIndex = start.Row; rowIndex <= end.Row; rowIndex++)
-            {
-                var row = sheet.GetRow(rowIndex) ?? sheet.CreateRow(rowIndex);
-
-                for (int columnIndex = start.Column; columnIndex <= end.Column; columnIndex++)
-                {
-                    var cell = (XSSFCell)(row.GetCell(columnIndex) ?? row.CreateCell(columnIndex));
-                    cell.CellStyle = cellStyle;
-                }
-            }
-        }
-
-
-
         private XSSFColor GetXSSFColor(System.Drawing.Color color)
         {
             byte[] rgb = new byte[3];
@@ -432,14 +263,5 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
                 sheet.AutoSizeColumn(col);
             }
         }
-
-        public void SaveWorkbook()
-        {
-            using (FileStream fileStream = new FileStream(config.FileLocation, FileMode.Create, FileAccess.Write))
-            {
-                workbook.Write(fileStream); // Write the workbook to the file
-            }
-        }
-
     }
 }

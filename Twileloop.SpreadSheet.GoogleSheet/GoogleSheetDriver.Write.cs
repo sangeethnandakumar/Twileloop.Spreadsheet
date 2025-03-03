@@ -401,10 +401,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             {
                 var requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } };
                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-                Task.Run(() =>
-                {
-                    googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
-                });
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
             }
         }
 
@@ -433,10 +430,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             {
                 var requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } };
                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-                Task.Run(() =>
-                {
-                    googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
-                });
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
             }
         }
     }
