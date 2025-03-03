@@ -83,11 +83,12 @@ namespace Twileloop.SpreadSheet.Demo
                     .Build();
 
                 Console.WriteLine($"Driver: {adapter.DriverName} | Merging cells");
-                adapter.Writer.MergeCells("A2", "E2");
+                adapter.Writer.MergeCells("A2", "E2"); //A2:E2
 
                 Console.WriteLine($"Driver: {adapter.DriverName} | Writing cell");
                 adapter.Writer.WriteCell("A2", "This is just a very very long description as an example", new StyleBuilder().Bold().Italic().Underline().Build());
 
+                
                 Console.WriteLine($"Driver: {adapter.DriverName} | Writing rows");
                 adapter.Writer.WriteRow("A3", new[] { "Col 1", "Col 2", "Col 3", "Col 4" }, impactStyle);
                 adapter.Writer.WriteRow("A4", new[] { "Col 1", "Col 2", "Col 3", "Col 4" }, impactStyle);
@@ -116,7 +117,6 @@ namespace Twileloop.SpreadSheet.Demo
                     .WithTextAllignment(HorizontalTxtAlignment.RIGHT, VerticalTxtAlignment.MIDDLE)
                     .WithBackgroundColor(Color.DeepPink)
                     .Build();
-
                 
 
                 Console.WriteLine($"Driver: {adapter.DriverName} | Creating table");

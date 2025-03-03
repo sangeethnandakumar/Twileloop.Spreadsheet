@@ -22,6 +22,21 @@ public readonly struct Addr
 
     public static implicit operator Addr((int, int) address) => new Addr(address);
 
+    public Addr MoreRight(int byNColumns)
+    {
+        return new Addr((Row + 1, Column + byNColumns));
+    }
+
+    public Addr MoveBelow(int byNRows)
+    {
+        return new Addr((Row + byNRows, Column + 1));
+    }
+
+    public Addr MoveBelowAndRight(int byNRows, int byNCols)
+    {
+        return new Addr((Row + byNRows, Column + byNCols));
+    }
+
     public override string ToString()
     {
         return $"{GetExcelColumn(Column + 1)}{Row + 1}";
