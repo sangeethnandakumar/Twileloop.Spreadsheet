@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Twileloop.SpreadSheet.Factory.Base;
 using Twileloop.SpreadSheet.Styling;
 
@@ -59,19 +60,22 @@ namespace Twileloop.SpreadSheet.GoogleSheet
         public void InitialiseWorkbook()
         {
             GoogleCredential credential;
-            using (var stream = new FileStream(config.Credential, FileMode.Open, FileAccess.Read))
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(config.JsonCredentialContent)))
             {
                 credential = GoogleCredential
                     .FromStream(stream)
                     .CreateScoped(SheetsService.Scope.Spreadsheets);
             }
+
             googleSheets = new SheetsService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
                 ApplicationName = config.ApplicationName,
             });
+
             spreadSheetId = GetSpreadsheetIdFromUrl(config.SheetsURI);
         }
+
 
         public string ReadCell(Addr addr)
         {
@@ -173,8 +177,8 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void WriteCell(Addr addr, string data, SpreadsheetStyling style = null)
         {
-            
-            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}";
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column + 1)}{addr.Row + 1}";
+
             ValueRange valueRange = new ValueRange
             {
                 Values = new List<IList<object>> { new List<object> { data } }
@@ -192,8 +196,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void WriteColumn(Addr addr, string[] data, SpreadsheetStyling style = null)
         {
-            
-            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}:{ToColumnName(addr.Column)}{addr.Row + data.Length - 1}";
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column + 1)}{addr.Row + 1}:{ToColumnName(addr.Column + 1)}{addr.Row + data.Length}";
 
             var valueRange = new ValueRange
             {
@@ -218,8 +221,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void WriteRow(Addr addr, string[] data, SpreadsheetStyling style = null)
         {
-            
-            string range = $"{currentSheetName}!{ToColumnName(addr.Column)}{addr.Row}:{ToColumnName(addr.Column + data.Length - 1)}{addr.Row}";
+            string range = $"{currentSheetName}!{ToColumnName(addr.Column + 1)}{addr.Row + 1}:{ToColumnName(addr.Column + data.Length)}{addr.Row + 1}";
 
             var valueRange = new ValueRange
             {
@@ -243,7 +245,8 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             int rowCount = data.Rows.Count;
             int columnCount = data.Columns.Count;
 
-            string range = $"{currentSheetName}!{ToColumnName(startAddr.Column)}{startAddr.Row}:{ToColumnName(startAddr.Column + columnCount - 1)}{startAddr.Row + rowCount - 1}";
+            string range = $"{currentSheetName}!{ToColumnName(startAddr.Column + 1)}{startAddr.Row + 1}:{ToColumnName(startAddr.Column + columnCount)}{startAddr.Row + rowCount}";
+
 
             var valueRange = new ValueRange
             {
@@ -358,17 +361,21 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void ApplyStyling(Addr start, Addr end, SpreadsheetStyling styling)
         {
-            
             int? sheetId = GetActiveSheetId();
-
-            if (!sheetId.HasValue)
-            {
-                return;
-            }
+            if (!sheetId.HasValue) return;
 
             var requests = new List<Request>();
 
-            // Apply text formatting if present
+            var gridRange = new GridRange
+            {
+                SheetId = sheetId.Value,
+                StartRowIndex = start.Row,
+                EndRowIndex = end.Row + 2,  // Exclusive, so add +1
+                StartColumnIndex = start.Column,
+                EndColumnIndex = end.Column + 2 // Exclusive, so add +1
+            };
+
+            // Apply text formatting
             if (styling.TextFormating != null)
             {
                 var textFormat = new TextFormat
@@ -390,81 +397,57 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                     };
                 }
 
-                string horizontalAlignment = ConvertToGoogleHorizontalAlignment(styling.TextFormating.HorizontalAlignment);
-                string verticalAlignment = ConvertToGoogleVerticalAlignment(styling.TextFormating.VerticalAlignment);
-
                 var cellFormat = new CellFormat
                 {
                     TextFormat = textFormat,
-                    HorizontalAlignment = horizontalAlignment,
-                    VerticalAlignment = verticalAlignment
+                    HorizontalAlignment = ConvertToGoogleHorizontalAlignment(styling.TextFormating.HorizontalAlignment),
+                    VerticalAlignment = ConvertToGoogleVerticalAlignment(styling.TextFormating.VerticalAlignment)
                 };
 
-                var repeatCellRequest = new RepeatCellRequest
+                requests.Add(new Request
                 {
-                    Range = new GridRange
+                    RepeatCell = new RepeatCellRequest
                     {
-                        SheetId = sheetId.Value,
-                        StartRowIndex = start.Row - 1,
-                        EndRowIndex = end.Row,
-                        StartColumnIndex = start.Column - 1,
-                        EndColumnIndex = end.Column
-                    },
-                    Cell = new CellData
-                    {
-                        UserEnteredFormat = cellFormat
-                    },
-                    Fields = "userEnteredFormat.textFormat,userEnteredFormat.horizontalAlignment,userEnteredFormat.verticalAlignment"
-                };
-
-                requests.Add(new Request { RepeatCell = repeatCellRequest });
+                        Range = gridRange,
+                        Cell = new CellData { UserEnteredFormat = cellFormat },
+                        Fields = "userEnteredFormat.textFormat,userEnteredFormat.horizontalAlignment,userEnteredFormat.verticalAlignment"
+                    }
+                });
             }
 
-            // Apply cell formatting if present
+            // Apply cell formatting
             if (styling.CellFormating != null)
             {
-                var backgroundColor = new Color
-                {
-                    Red = styling.CellFormating.BackgroundColor.R / 255f,
-                    Green = styling.CellFormating.BackgroundColor.G / 255f,
-                    Blue = styling.CellFormating.BackgroundColor.B / 255f
-                };
-
                 var cellFormat = new CellFormat
                 {
-                    BackgroundColor = backgroundColor
+                    BackgroundColor = new Color
+                    {
+                        Red = styling.CellFormating.BackgroundColor.R / 255f,
+                        Green = styling.CellFormating.BackgroundColor.G / 255f,
+                        Blue = styling.CellFormating.BackgroundColor.B / 255f
+                    }
                 };
 
-                var repeatCellRequest = new RepeatCellRequest
+                requests.Add(new Request
                 {
-                    Range = new GridRange
+                    RepeatCell = new RepeatCellRequest
                     {
-                        SheetId = sheetId.Value,
-                        StartRowIndex = start.Row - 1,
-                        EndRowIndex = end.Row,
-                        StartColumnIndex = start.Column - 1,
-                        EndColumnIndex = end.Column
-                    },
-                    Cell = new CellData
-                    {
-                        UserEnteredFormat = cellFormat
-                    },
-                    Fields = "userEnteredFormat.backgroundColor"
-                };
-
-                requests.Add(new Request { RepeatCell = repeatCellRequest });
+                        Range = gridRange,
+                        Cell = new CellData { UserEnteredFormat = cellFormat },
+                        Fields = "userEnteredFormat.backgroundColor"
+                    }
+                });
             }
 
             if (requests.Count > 0)
             {
-                var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
-                {
-                    Requests = requests
-                };
-
+                var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
                 googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
             }
         }
+
+
+
 
         private string ConvertToGoogleHorizontalAlignment(HorizontalTxtAlignment alignment)
         {
@@ -498,13 +481,8 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void ApplyBorder(Addr start, Addr end, BorderStyling styling)
         {
-            
             int? sheetId = GetActiveSheetId();
-
-            if (!sheetId.HasValue)
-            {
-                return;
-            }
+            if (!sheetId.HasValue) return;
 
             var requests = new List<Request>();
 
@@ -524,10 +502,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 Range = new GridRange
                 {
                     SheetId = sheetId.Value,
-                    StartRowIndex = start.Row - 1,
-                    EndRowIndex = end.Row,
-                    StartColumnIndex = start.Column - 1,
-                    EndColumnIndex = end.Column
+                    StartRowIndex = Math.Max(0, start.Row),   // Ensure non-negative
+                    EndRowIndex = end.Row + 1,               // Include last row
+                    StartColumnIndex = Math.Max(0, start.Column), // Ensure non-negative
+                    EndColumnIndex = end.Column + 1          // Include last column
                 }
             };
 
@@ -577,6 +555,7 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
         }
 
+
         private string ConvertToGoogleBorderStyle(BorderType borderType, BorderThickness thickness)
         {
             switch (borderType)
@@ -606,7 +585,6 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
         public void MergeCells(Addr start, Addr end)
         {
-            
             int? sheetId = GetActiveSheetId();
 
             if (!sheetId.HasValue)
@@ -619,10 +597,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 Range = new GridRange
                 {
                     SheetId = sheetId.Value,
-                    StartRowIndex = start.Row - 1,
-                    EndRowIndex = end.Row,
-                    StartColumnIndex = start.Column - 1,
-                    EndColumnIndex = end.Column
+                    StartRowIndex = start.Row,
+                    EndRowIndex = end.Row + 1,
+                    StartColumnIndex = start.Column,
+                    EndColumnIndex = end.Column + 1
                 },
                 MergeType = "MERGE_ALL"
             };
@@ -635,9 +613,9 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
         }
 
+
         public void ResizeColumn(Addr addr, int width)
         {
-            
             int? sheetId = GetActiveSheetId();
 
             if (!sheetId.HasValue)
@@ -651,8 +629,8 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 {
                     SheetId = sheetId.Value,
                     Dimension = "COLUMNS",
-                    StartIndex = addr.Column - 1,
-                    EndIndex = addr.Column
+                    StartIndex = addr.Column,
+                    EndIndex = addr.Column + 1
                 },
                 Properties = new DimensionProperties
                 {
@@ -669,9 +647,9 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
         }
 
+
         public void ResizeRow(Addr addr, float height)
         {
-            
             int? sheetId = GetActiveSheetId();
 
             if (!sheetId.HasValue)
@@ -685,8 +663,8 @@ namespace Twileloop.SpreadSheet.GoogleSheet
                 {
                     SheetId = sheetId.Value,
                     Dimension = "ROWS",
-                    StartIndex = addr.Row - 1,
-                    EndIndex = addr.Row
+                    StartIndex = addr.Row,
+                    EndIndex = addr.Row + 1
                 },
                 Properties = new DimensionProperties
                 {
@@ -703,43 +681,14 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
         }
 
+
         public void AutoFitAllColumns()
         {
-            
-            int? sheetId = GetActiveSheetId();
-
-            if (!sheetId.HasValue)
-            {
-                return;
-            }
-
-            // Google Sheets handles column auto-sizing automatically,
-            // but we can send a request to refresh the sheet which may trigger auto-sizing
-            var refreshRequest = new RefreshDataSourceRequest
-            {
-                DataSourceId = spreadSheetId
-            };
-
-            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
-            {
-                Requests = new List<Request> { new Request { RefreshDataSource = refreshRequest } }
-            };
-
-            try
-            {
-                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
-            }
-            catch
-            {
-                // RefreshDataSource might not be available for all sheets, so we'll ignore exceptions
-            }
         }
+
 
         public void SaveWorkbook()
         {
-            // Google Sheets saves automatically, so no explicit save action is needed
-            // But we can implement auto-fitting columns here
-            AutoFitAllColumns();
         }
     }
 }

@@ -1,9 +1,8 @@
-﻿using System;
-using Twileloop.SpreadSheet.Factory.Abstractions;
+﻿using Twileloop.SpreadSheet.Factory.Abstractions;
 
 namespace Twileloop.SpreadSheet.Factory
 {
-    public class SpreadSheetAccessor : IDisposable
+    public class SpreadSheetAccessor : ISpreadSheetAdapter
     {
         public ISpreadSheetReader Reader { get; set; }
         public ISpreadSheetWriter Writer { get; set; }

@@ -5,15 +5,15 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
     public class GoogleSheetOptions
     {
-        public GoogleSheetOptions(Uri sheetsURI, string applicationName, string credential)
+        public GoogleSheetOptions(Uri sheetsURI, string applicationName, string jsonCredentialContent)
         {
             SheetsURI = sheetsURI;
             ApplicationName = applicationName;
-            Credential = credential;
+            JsonCredentialContent = jsonCredentialContent;
         }
 
         public Uri SheetsURI { get; set; }
         public string ApplicationName { get; set; }
-        public string Credential { get; set; }
+        public string JsonCredentialContent { get; set; }
     }
 }

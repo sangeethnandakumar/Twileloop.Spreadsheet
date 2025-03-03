@@ -4,7 +4,7 @@ namespace Twileloop.SpreadSheet.Factory
 {
     public static class SpreadSheetFactory
     {
-        public static SpreadSheetAccessor CreateAccessor(ISpreadSheetDriver driver)
+        public static SpreadSheetAccessor CreateAdapter(ISpreadSheetDriver driver)
         {
             var accessor = new SpreadSheetAccessor();
             accessor.Reader = driver;
