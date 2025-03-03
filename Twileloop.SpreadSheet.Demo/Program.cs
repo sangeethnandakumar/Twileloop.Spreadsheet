@@ -24,7 +24,7 @@ namespace Twileloop.SpreadSheet.Demo
             var sheetsURI = new Uri("https://docs.google.com/spreadsheets/d/1YWqL4_jmGhtpj--ZBLRe598w7IXDCvzL0UWHU_wZMqU/edit?gid=0#gid=0");
             var sheetName = "MySheet";
             var jsonCredentialContent = File.ReadAllText("secrets.json");
-            var bulkUpdate = false; //Bulk update is facing some bugs, Pls turn it off until a fix is applied
+            var bulkUpdate = false;
             var googleSheet = new GoogleSheetDriver(new GoogleSheetOptions(sheetsURI, sheetName, jsonCredentialContent, bulkUpdate));
             ISpreadSheetAdapter gsheetAdapter = SpreadSheetFactory.CreateAdapter(googleSheet);
 
@@ -49,11 +49,11 @@ namespace Twileloop.SpreadSheet.Demo
 
         private static void OpenGoogleSheetInBrowser(Uri sheetsURI)
         {
-            //Process.Start(new ProcessStartInfo
-            //{
-            //    FileName = sheetsURI.ToString(),
-            //    UseShellExecute = true
-            //});
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = sheetsURI.ToString(),
+                UseShellExecute = true
+            });
         }
 
 

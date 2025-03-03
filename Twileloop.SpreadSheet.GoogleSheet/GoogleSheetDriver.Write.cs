@@ -3,6 +3,7 @@ using Google.Apis.Sheets.v4.Data;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
 using Twileloop.SpreadSheet.Styling;
 
 namespace Twileloop.SpreadSheet.GoogleSheet
@@ -320,7 +321,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             if (requests.Count > 0)
             {
                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                Task.Run(() =>
+                {
+                    googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                });
             }
         }
 
@@ -366,7 +370,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
 
             var requests = new List<Request> { new Request { UpdateBorders = updateBordersRequest } };
             var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-            googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+            Task.Run(() =>
+            {
+                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+            });
         }
 
         public void ResizeColumn(Addr addr, int width)
@@ -394,7 +401,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             {
                 var requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } };
                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                Task.Run(() =>
+                {
+                    googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                });
             }
         }
 
@@ -423,7 +433,10 @@ namespace Twileloop.SpreadSheet.GoogleSheet
             {
                 var requests = new List<Request> { new Request { UpdateDimensionProperties = updateDimensionPropertiesRequest } };
                 var batchUpdateRequest = new BatchUpdateSpreadsheetRequest { Requests = requests };
-                googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                Task.Run(() =>
+                {
+                    googleSheets.Spreadsheets.BatchUpdate(batchUpdateRequest, spreadSheetId).Execute();
+                });
             }
         }
     }
