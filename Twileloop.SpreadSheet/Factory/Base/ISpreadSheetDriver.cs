@@ -5,6 +5,6 @@ namespace Twileloop.SpreadSheet.Factory.Base
 {
     public interface ISpreadSheetDriver : ISpreadSheetReader, ISpreadSheetWriter, ISpreadSheetController, IDisposable
     {
-
+        public string DriverName { get; }
     }
 }

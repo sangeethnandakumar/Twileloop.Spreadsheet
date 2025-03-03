@@ -18,14 +18,14 @@ namespace Twileloop.SpreadSheet.Styling
         public bool Underline { get; set; }
         public int Size { get; set; } = 11;
         public Color FontColor { get; set; } = Color.Black;
-        public string Font { get; set; } = "Aptos Narrow";
+        public string Font { get; set; } = "Arial";
         public VerticalTxtAlignment VerticalAlignment { get; set; } = VerticalTxtAlignment.MIDDLE;
         public HorizontalTxtAlignment HorizontalAlignment { get; set; } = HorizontalTxtAlignment.LEFT;
     }
 
     public class CellStyling : ICellFormating
     {
-        public Color BackgroundColor { get; set; } = Color.White;
+        public Color BackgroundColor { get; set; } = Color.Transparent;
     }
 
     public class BorderStyling : IBorderFormating
@@ -63,8 +63,10 @@ namespace Twileloop.SpreadSheet.Styling
         public StyleBuilder WithFontSize(int size) { _formatting.TextFormating.Size = size; return this; }
         public StyleBuilder WithFont(string font) { _formatting.TextFormating.Font = font; return this; }
         public StyleBuilder WithTextColor(Color color) { _formatting.TextFormating.FontColor = color; return this; }
-        public StyleBuilder WithHorizontalAlignment(HorizontalTxtAlignment alignment) { _formatting.TextFormating.HorizontalAlignment = alignment; return this; }
-        public StyleBuilder WithVerticalAlignment(VerticalTxtAlignment alignment) { _formatting.TextFormating.VerticalAlignment = alignment; return this; }
+        public StyleBuilder WithTextAllignment(HorizontalTxtAlignment h, VerticalTxtAlignment v) { 
+            _formatting.TextFormating.HorizontalAlignment = h; 
+            _formatting.TextFormating.VerticalAlignment = v; 
+            return this; }
         public StyleBuilder WithBackgroundColor(Color color) { _formatting.CellFormating.BackgroundColor = color; return this; }
 
         public SpreadsheetStyling Build() => _formatting;

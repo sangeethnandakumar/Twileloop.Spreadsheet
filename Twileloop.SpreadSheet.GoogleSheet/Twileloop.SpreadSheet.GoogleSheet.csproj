@@ -30,6 +30,7 @@
 		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
 		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
 		<PackageReference Include="Grpc.Core" Version="2.46.6" />
+		<PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -16,6 +16,8 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
         private IWorkbook workbook;
         private ISheet sheet;
 
+        public string DriverName => "MicrosoftExcel";
+
         public MicrosoftExcelDriver(MicrosoftExcelOptions config)
         {
             this.config = config;
@@ -412,13 +414,14 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
 
         public void ResizeColumn(Addr addr, int width)
         {
+            width -= 20;
             sheet.SetColumnWidth(addr.Column, width * 256);
         }
 
         public void ResizeRow(Addr addr, float height)
         {
             IRow row = sheet.GetRow(addr.Row) ?? sheet.CreateRow(addr.Row);
-            row.HeightInPoints = height;
+            row.HeightInPoints = height + 20;
         }
 
         public void AutoFitAllColumns()
@@ -432,7 +435,6 @@ namespace Twileloop.SpreadSheet.MicrosoftExcel
 
         public void SaveWorkbook()
         {
-            AutoFitAllColumns();
             using (FileStream fileStream = new FileStream(config.FileLocation, FileMode.Create, FileAccess.Write))
             {
                 workbook.Write(fileStream); // Write the workbook to the file
