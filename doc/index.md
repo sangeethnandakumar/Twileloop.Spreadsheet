@@ -1,279 +1,242 @@
----
-layout: default
----
+# Twileloop.SpreadSheet Documentation  
 
-## About
-A cross format spreadsheet accessor that empowers you to effortlessly read, write, copy, and move data across popular spreadsheet formats like Google Sheets and Microsoft Excel.
+## Overview  
 
-## License
-> Twileloop.SpreadSheet is licensed under the MIT License. See the LICENSE file for more details.
+- **Twileloop.SpreadSheet** is a very simple & interesting library for reading and writing various spreadsheet formats effortlessly.  
+- It is **not** a low-level implementation but a wrapper around **NPOI** and **Google Sheets API**, abstracting their complexities into a unified, easy-to-use API.  
+- The goal is to provide a single, simplified interface for handling both Excel and Google Sheets without dealing with intricate details.  
+- Designed for quick and hassle-free spreadsheet creation and access.  
+- Supports seamless data transfer between different spreadsheet formats.  
+- Currently, only basic editing and styling features are available; advanced elements like images and graphics are not yet supported.  
 
-#### This library is absolutely free. If it gives you a smile, A small coffee would be a great way to support my work. Thank you for considering it!
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sangeethnanda)
+### **One Code --> Export to Excel and/or Google Sheets effortlessly.**
 
-## Usage
-***To get started, You have to install atleast 2 packages:***
+> With more driver additions, More and more spreadsheet kinds can be supported later
+----
 
-- The core `Twileloop.SpreadSheet` package
-- A driver package for your desired spreadsheet (Microsoft Excel, Google Sheet etc...)
+## Installation
 
-> **Note**
-> ***In the backstage, Twileloop.SpreadSheet uses NPOI to connect with Excel files and Google.Apis.Sheets.v4 to connect with Google Sheets***
+To get started, install the **core package** and the **driver package(s)** for the spreadsheet formats you want to use.
 
-<hr/>
-
-## 1. Install Core Package
+### 1. Install the Core Package
 ```bash
 dotnet add package Twileloop.SpreadSheet
 ```
 
-## 2. Install Driver Packages (One or More)
+### 2. Install Driver Packages (1 or More)
+Install the driver(s) for the formats you plan to use:
 
-> There is no need to install all these driver packages, If you only prefer to work with Microsoft Excel, ignore the Google Sheets driver package
+| Driver | Format | Install Command |
+|--------|--------|-----------------|
+| <img src="https://iili.io/HUaMOEG.png" alt="Google Sheets Logo" height="30"> | Google Sheets | `dotnet add package Twileloop.SpreadSheet.GoogleSheet` |
+| <img src="https://iili.io/HUaM8Yl.png" alt="Microsoft Excel Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel` |
 
-| Driver | To Use | Install Package   
-| :---: | :---:   | :---:
-| <img src="https://iili.io/HUaMOEG.png" alt="Logo" height="30"> | Google Sheet | `dotnet add package Twileloop.SpreadSheet.GoogleSheet`  
-| <img src="https://iili.io/HUaM8Yl.png" alt="Logo" height="30"> | Microsoft Excel | `dotnet add package Twileloop.SpreadSheet.MicrosoftExcel`  
+---
 
-### Supported Features
+## Getting Started
 
-| Feature     | Microsoft Excel | Google Sheets
-| ---      | ---       | ---
-| Plan Text Reads | ✅ | ✅
-| Plan Text Writes | ✅ | ✅
-| Switch Sheets | ✅ | ✅
-| Text Formatting | ✅ | ✅
-| Cell Formatting | ✅ | ✅
-| Border Formatting | 🚧 | 🚧
-| Cell Merging | 🚧 | 🚧
-| Image Reads | 🚧 | 🚧
-| Image Writes | 🚧 | 🚧
-| Formulas | ❌ | ❌
-| Draw Graph | ❌ | ❌
+### 1. Initialize Drivers
 
-✅ - Available &nbsp;&nbsp;&nbsp; 
-🚧 - Work In Progress &nbsp;&nbsp;&nbsp; 
-❌ - Not Available
-
-## 3. Initialize Driver(s) 
-Once installed packages, Initialize your drivers
+Start by initializing the drivers for the spreadsheet formats you want to work with.
 
 ```csharp
-    using Twileloop.SpreadSheet.GoogleSheet;
-    using Twileloop.SpreadSheet.MicrosoftExcel;
+using Twileloop.SpreadSheet.GoogleSheet;
+using Twileloop.SpreadSheet.MicrosoftExcel;
 
-    //Step 1: Initialize your prefered spreadsheet drivers
-    var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions
-    {
-        FileLocation = "<YOUR_EXCEL_FILE_LOCATION>"
-    });
-    
-    var googleSheetsDriver = new GoogleSheetDriver(new GoogleSheetOptions
-    {
-        SheetsURI = new Uri("<YOUR_GOOGLE_SHEETS_URL>"),
-        Credential = @"D:\secrets.json" //Location of your credential file
-    });
-```
-> **Warning**
-> ***If planning to use Google Sheets, You have to:***
-1. Create a service account in Google Cloud Platform (GCP)
-1. Download the credentials `secrets.json` from GCP console and save it
-1. Enable Google Sheets API in your GCP console
-1. Then share your Google Sheet with the service account's email id abd assign as 'Editor' (for write permission)
+// Initialize Microsoft Excel Driver
+var excelDriver = new MicrosoftExcelDriver(new MicrosoftExcelOptions(filePath));
 
-The above process is out of scope to explain more here in detail.
-
-Here's a good video tutorial to help you get started (Upto 3:07): https://www.youtube.com/watch?v=fxGeppjO0Mg
-
-## 4. Get An Accessor
-Once driver(s) are initialized, Create an accessor to access the spreadsheet
-
-```csharp
-    using Twileloop.SpreadSheet.Factory;
-
-    //Step 2: Use that driver to build a spreadsheet accessor
-    var excelAccessor = SpreadSheetFactory.CreateAccessor(excelDriver);
-    var googleSheetAccessor = SpreadSheetFactory.CreateAccessor(googleSheetsDriver);
+// Initialize Google Sheets Driver
+var googleSheet = new GoogleSheetDriver(new GoogleSheetOptions(
+    sheetsURI: new Uri("https://docs.google.com/spreadsheets/d/1YWqL4_jmGhtpj--ZBLRe598w7IXDCvzL0UWHU_wZMqU/edit?gid=0#gid=0"),
+    sheetName: "MySheet",
+    jsonCredentialContent: File.ReadAllText("secrets.json"),
+    bulkUpdate: false
+));
 ```
 
-An accessor wil give you 3 handles:
-- **Reader** => Use this handle to read from your spreadsheets
-- **Writer** => Use this handle to write to your spreadsheets
-- **Controller** => Use this handle to control your spreadsheets
+> **Note for Google Sheets**:
+> - Create a service account in Google Cloud Platform (GCP).
+> - Download the `secrets.json` credentials file from the GCP console.
+> - Enable the Google Sheets API in your GCP console.
+> - Share your Google Sheet with the service account's email and assign it as an "Editor" for write permissions.
 
-## 5. Load WorkSheet
-First step is to load your prefered sheet by controlling the spreadsheet
-> You must load a worksheet using the Controller before reading or writing to your spreadsheet
+---
+
+# For GoogleSheetDriver, Setting `bulkUpdate` to `true`, Makes Writes To GoogleSheets Faster, But This Is Now Expirimental
+
+### bulkUpdate: false 
+![image](https://raw.githubusercontent.com/sangeethnandakumar/Twileloop.Spreadsheet/refs/heads/master/doc/PerfNonBulk.webp)
+
+### bulkUpdate: true
+![image](https://raw.githubusercontent.com/sangeethnandakumar/Twileloop.Spreadsheet/refs/heads/master/doc/PerfBulk.webp)
+---
+
+
+### 2. Create an Adapter
+
+Once the drivers are initialized, create an adapter to interact with the spreadsheet.
 
 ```csharp
-    //Step 3: Now this accessor can Read/Write and Control spreadsheet. Let's open Sheet1
-    using (excelAccessor)
-    {
-        excelAccessor.Controller.LoadSheet("Sheet1");
-    }
-    
-    using (googleSheetAccessor)
-    {
-        excelAccessor.Controller.LoadSheet("Sheet1");
-    }
+using Twileloop.SpreadSheet.Factory;
+
+// Create adapters for Excel and Google Sheets
+ISpreadSheetAdapter excelAdapter = SpreadSheetFactory.CreateAdapter(excelDriver);
+ISpreadSheetAdapter gsheetAdapter = SpreadSheetFactory.CreateAdapter(googleSheet);
 ```
 
-## 6. Read SpreadSheet
-Reading is as simple as this
+### 3. Initialize the Workbook
+
+Before performing any operations, initialize the workbook.
 
 ```csharp
-    //Step 4: Different Ways To Read Data
-    using (excelAccessor)
-    {
-        //Load prefered sheet
-        excelAccessor.Controller.LoadSheet("Sheet1");
-    
-        //Read a single cell
-        string data1 = excelAccessor.Reader.ReadCell(1, 1);
-        string data2 = excelAccessor.Reader.ReadCell("A10");
-    
-        //Read a full row in bulk
-        string[] data3 = excelAccessor.Reader.ReadRow(1);
-        string[] data4 = excelAccessor.Reader.ReadRow("C9");
-    
-        //Read a full column in bulk
-        string[] data5 = excelAccessor.Reader.ReadColumn(1);
-        string[] data6 = excelAccessor.Reader.ReadColumn("D20");
-    
-        //Select an area and extract data in bulk
-        DataTable data7 = excelAccessor.Reader.ReadSelection(1, 1, 10, 10);
-        DataTable data8 = excelAccessor.Reader.ReadSelection("A1", "J10");
-    }
+adapter.Controller.InitialiseWorkbook(); //Mandatory step
 ```
 
-> If you're using Google Sheet, It's recommended to use any bulk reads/writes operations, Because in case of Google Sheets calling `ReadCell()` multiple times is not efficient as it fires multiple API calls to Google to read cells.
+---
 
-> Bulk reads/writes will fire only once and get data in one go. If you just need to read a single cell, Feel free to use `ReadCell()` since it makes sense in a read and drop situation
+### 4. Create and Open Sheets
 
+You can create new sheets and open them for reading or writing. Remember, You must open a sheet to do any operations
 
-## 7. Write SpreadSheet
-Writing is as simple as this
+> Once a sheet is opened all below commands execute in that opened sheet. If you're dealing with multiple sheets, Call `adapter.Controller.OpenSheet("B");` again as needed whenever you need to change sheet and rest of code need to execute in new sheet
 
 ```csharp
-    //Step 5: Different Ways To Write Data
-    using (googleSheetAccessor)
-    {
-        googleSheetAccessor.Controller.LoadSheet("Sheet1");
-    
-        //Write a single cell
-        googleSheetAccessor.Writer.WriteCell(1, 1, "Country");
-        googleSheetAccessor.Writer.WriteCell("C17", "Country");
-    
-        //Write a full row in bulk
-        googleSheetAccessor.Writer.WriteRow(1, new string[] { "USA", "China", "Russia", "India" });
-        googleSheetAccessor.Writer.WriteRow("A1", new string[] { "USA", "China", "Russia", "India" });
-    
-        //Write a full column in bulk
-        googleSheetAccessor.Writer.WriteColumn(1, new string[] { "USA", "China", "Russia", "India" });
-        googleSheetAccessor.Writer.WriteColumn("B22", new string[] { "USA", "China", "Russia", "India" });
-    
-        //Select an area and write a grid in bulk
-        DataTable grid = new DataTable();
-        grid.Columns.Add("Rank");
-        grid.Columns.Add("Powerfull Militaries");
-    
-        grid.Rows.Add(1, "USA");
-        grid.Rows.Add(2, "China");
-        grid.Rows.Add(3, "Russia");
-        grid.Rows.Add(4, "India");
-        grid.Rows.Add(5, "France");
-    
-        googleSheetAccessor.Writer.WriteSelection(1, 1, grid);
-        googleSheetAccessor.Writer.WriteSelection("D20", grid);
-    }
+// Create a new sheet
+adapter.Controller.CreateSheets("A"); //Optional, If creating a new spreadsheet
+
+// Open a sheet
+adapter.Controller.OpenSheet("A"); //Mandatory
 ```
 
-## 8. Read/Write Multiple SpreadSheets In One Go
-Open multiple spreadsheets in one go by cascading accessors then move data in between
+# READING FROM SPREADSHEET
+
+# WRITING INTO SPREADSHEET
+
+### 5. Writing Data
+
+You can write data to cells, rows, columns, or tables.
+
+> You can use `"A1"` notation to address a cell or `(row, col)` notation as well. Both works on your convenience on most functions
+
+#### Write Individual Cells
+
+> Use below if you need to tweek specific cells or write to few cells. For a list of data either use WriteRow or WriteColumn as they're bulk writes and more efficient than WriteCell
 
 ```csharp
-    //Read and write both spreadsheets at once
-    using (excelAccessor)
-    {
-        using (googleSheetAccessor)
-        {
-            //Step 1: Open both spreadsheets
-            excelAccessor.Controller.LoadSheet("Sheet1");
-            googleSheetAccessor.Controller.LoadSheet("Sheet1");
-    
-            //Step 2: Read from excel
-            DataTable excelData = excelAccessor.Reader.ReadSelection("A1", "D10");
-    
-            //Step 3: Then write it to Google Sheet
-            googleSheetAccessor.Writer.WriteSelection("C1", excelData);                    
-        }
-    }
+adapter.Writer.WriteCell("A1", "Write");  //Address notation based access
+adapter.Writer.WriteCell((1, 2), "Individual"); //(row, col) notation based access, This is not an index and starts with 1 not 0
+adapter.Writer.WriteCell("C1", "Cells");
 ```
 
-## 9. Sheets Controls
-Create one or more sheets, Get all sheets or find active sheet name
+#### Write Rows
+
+> Use below if you need to write rows or cols in one go. For a bigger set of data, preprare your data into a DataTable & use WriteTable instead as it's more efficient then WriteRow or WriteColumn
 
 ```csharp
-    //Create one or more new sheets
-    excelAccessor.Controller.CreateSheets("Sheet1", "Sheet2", "Sheet3");
-    googleSheetAccessor.Controller.CreateSheets("Sheet1", "Sheet2");
-
-    //Get list of sheets
-    var allExcelSheets = excelAccessor.Controller.GetSheets();
-    var allGoogleSheetSheet = googleSheetAccessor.Controller.GetSheets();
-
-    //Get active sheet name
-    var activeExcelSheet = excelAccessor.Controller.GetActiveSheet();
-    var googleSheetSheet = googleSheetAccessor.Controller.GetActiveSheet();
+adapter.Writer.WriteRow("A3", new[] { "Col 1", "Col 2", "Col 3", "Col 4" });
 ```
 
-## 10. Styling And Formatting
-Styling is easy as hell. Just define all your different styles/formatting globally and apply it for a selected cell range
-
-A formatting can have 3 types
-- Text Formatting
-- Cell Formatting
-- Border Formatting
-
-> Keep `NULL` for whichever format type you don't want to change
-
+> You can also pass a style if needed
 
 ```csharp
+var myStyle = new StyleBuilder()
+    .WithFont("Arial")
+    .WithTextColor(Color.AliceBlue)
+    .WithTextAllignment(HorizontalTxtAlignment.CENTER, VerticalTxtAlignment.BOTTOM)
+    .WithBackgroundColor(Color.Black)
+    .Build();
 
-    //Define your formatting, Let's say for titles
-    var titleFormat = new Formatting
-    {
-        //Text formatting
-        TextFormating = new TextFormating
-        {
-            Bold = false,
-            Italic = true,
-            Underline = false,
-            Size = 15,
-            HorizontalAlignment = HorizontalAllignment.RIGHT,
-            VerticalAlignment = VerticalAllignment.BOTTOM,
-            Font = "Impact",
-            Color = System.Drawing.Color.White,
-        },
-        //Cell formatting
-        CellFormating = new CellFormating
-        {
-            BackgroundColor = System.Drawing.Color.IndianRed
-        },
-        //Border formatting
-        BorderFormating = new BorderFormating
-        {
-            TopBorder = true,
-            LeftBorder = true,
-            RightBorder = true,
-            BottomBorder = true,
-            BorderType = BorderType.SOLID,
-            Thickness = 5
-        }
-    };
+adapter.Writer.WriteRow("A3", new[] { "Col 1", "Col 2", "Col 3", "Col 4" }, myStyle);
+```
 
-    //Then simply apply it as needed for a cell range
-    excelAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
-    googleSheetAccessor.Writer.ApplyFormatting(1, 1, 10, 4, titleFormat);
+#### Write Columns
+
+> Passing style is optional, You can simply avoid passing it if focusing only on data
+
+```csharp
+adapter.Writer.WriteColumn("A7", new[] { "Row 1", "Row 2", "Row 3", "Row 4" }, myStyle);
+```
+
+#### Write Tables
+
+> If you need to write huge dataset, The best way is to convert your data into a .NETs built in DataTable and write. This is much more efficient than writing cell by cell or row/col wise
+
+```csharp
+var table = new DataTable();
+table.Columns.Add("ID");
+table.Columns.Add("Name");
+table.Columns.Add("Age");
+table.Columns.Add("City");
+table.Columns.Add("Salary");
+table.Rows.Add(1, "John Doe", 28, "New York", 55000);
+
+adapter.Writer.WriteTable("A12", table, myStyle);
+```
+
+---
+
+### 6. Formatting and Styling
+
+Apply styles to cells, rows, columns, or tables.
+
+#### Create Styles
+```csharp
+var headingStyle = new StyleBuilder()
+    .Bold()
+    .WithFontSize(18)
+    .WithFont("Arial")
+    .WithTextColor(Color.Blue)
+    .WithTextAllignment(HorizontalTxtAlignment.LEFT, VerticalTxtAlignment.TOP)
+    .WithBackgroundColor(Color.LightBlue)
+    .Build();
+```
+
+#### Apply Styles
+
+> Here `A1` to `E1` is a grid selection rectanglular area where this style applies.
+
+```csharp
+adapter.Writer.ApplyStyling("A1", "E1", headingStyle);
+```
+
+#### Apply Borders
+
+> Here `A12` to `E21` is a grid selection rectanglular area where this border applies. (Outer border)
+> 
+```csharp
+adapter.Writer.ApplyBorder("A12", "E21", new BorderStyling
+{
+    TopBorder = true,
+    LeftBorder = true,
+    RightBorder = true,
+    BottomBorder = true,
+    BorderType = BorderType.SOLID,
+    BorderColor = Color.OrangeRed,
+    Thickness = BorderThickness.Thick
+});
+```
+
+---
+
+### 7. Resizing Rows and Columns
+
+Adjust the size of rows and columns.
+
+```csharp
+// Resize a row
+adapter.Writer.ResizeRow("A1", 50);
+
+// Resize a column
+adapter.Writer.ResizeColumn("A1", 40);
+```
+
+---
+
+### 8. Saving the Workbook
+
+After making changes, save the workbook.
+
+```csharp
+adapter.Controller.SaveWorkbook(); 
 ```
