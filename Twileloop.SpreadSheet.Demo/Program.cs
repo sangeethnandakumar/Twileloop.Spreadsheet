@@ -49,11 +49,11 @@ namespace Twileloop.SpreadSheet.Demo
 
         private static void OpenGoogleSheetInBrowser(Uri sheetsURI)
         {
-            //Process.Start(new ProcessStartInfo
-            //{
-            //    FileName = sheetsURI.ToString(),
-            //    UseShellExecute = true
-            //});
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = sheetsURI.ToString(),
+                UseShellExecute = true
+            });
         }
 
 
